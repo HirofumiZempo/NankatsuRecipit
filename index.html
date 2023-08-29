@@ -6,28 +6,33 @@
     body, html {
       margin: 0;
       padding: 0;
+      width: 100%;
+      height: 100%;
     }
     #slides {
-      width: 100vw;
-      height: calc(100vh - 10vh);
+      width: 90vw;  /* 5%の余白を左右に追加 */
+      height: calc(85vh);  /* 5%の余白を上下に追加 */
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
+      margin: 5vh auto;  /* 上下に5%の余白 */
     }
     .slide {
       display: none;
       position: absolute;
     }
     .slide img {
-      max-width: 100vw;
-      max-height: calc(100vh - 10vh);
+      max-width: 90vw;
+      max-height: calc(85vh);
       object-fit: contain;
     }
     #button-container {
       text-align: center;
       height: 10vh;
       background-color: rgba(255, 255, 255, 0.8);
+      font-size: 2rem;  /* ボタンの文字サイズを大きく */
+      margin: 0 5%;  /* 左右に5%の余白 */
     }
   </style>
 </head>
@@ -41,7 +46,7 @@
   <button onclick="showTableOfContents()">もくじ</button>
   <button onclick="prevSlide()">前へ</button>
   <button onclick="nextSlide()">次へ</button>
-  <input type="number" id="pageNumber" min="1" max="119">
+  <input type="number" id="pageNumber" min="1" max="119" style="font-size: 2rem;">  <!-- フォームの文字サイズを大きく -->
   <button onclick="jumpToSlide()">ジャンプ</button>
 </div>
 
