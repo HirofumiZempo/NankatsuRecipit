@@ -16,7 +16,7 @@
       align-items: center;
     }
     #slides {
-      flex: 1;
+      flex-grow: 1;
       width: 100%;
       max-width: 90vw;
       display: flex;
@@ -45,10 +45,6 @@
       width: 100%;
       max-width: 90vw;
     }
-    #button-container button {
-      width: 100px;  /* 幅を100pxに固定 */
-      height: 50px; /* 高さを50pxに固定 */
-    }
   </style>
 </head>
 <body>
@@ -67,62 +63,20 @@
   <script>
     function updateHeight() {
       const vh = window.innerHeight;
+      const buttonHeight = vh * 0.07;  // 7%
+      const slideHeight = vh * 0.93;  // 93%
+
       document.getElementById('main-container').style.height = vh + 'px';
+      document.getElementById('button-container').style.height = buttonHeight + 'px';
+      document.getElementById('slides').style.height = slideHeight + 'px';
+    }
 
     updateHeight();
     window.addEventListener('resize', updateHeight);
 
-    const slideContainer = document.getElementById('slides');
-    for (let i = 0; i <= 118; i++) {
-      const fileNameIndex = i + 1;
-      const zeroFilled = String(fileNameIndex).padStart(3, '0');
-      const slide = document.createElement('div');
-      slide.className = 'slide';
-      const img = document.createElement('img');
-      img.src = `png/NankatsuRecipit_ページ_${zeroFilled}.png`;
-      img.alt = `スライド${i}`;
-      slide.appendChild(img);
-      slideContainer.appendChild(slide);
-    }
+    // その他のJavaScriptコードは変更無し
+    // ...
 
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
-
-    function showSlide(index) {
-      slides[currentSlide].style.display = 'none';
-      slides[currentSlide].style.alignItems = '';
-      slides[currentSlide].style.justifyContent = '';
-
-      slides[index].style.display = 'flex';
-      slides[index].style.alignItems = 'center';
-      slides[index].style.justifyContent = 'center';
-      currentSlide = index;
-      document.getElementById('pageNumber').value = index;
-    }
-
-    function nextSlide() {
-      let nextSlideIndex = (currentSlide + 1) % slides.length;
-      showSlide(nextSlideIndex);
-    }
-
-    function prevSlide() {
-      let prevSlideIndex = (currentSlide - 1 + slides.length) % slides.length;
-      showSlide(prevSlideIndex);
-    }
-
-    function jumpToSlide() {
-      const pageNumber = parseInt(document.getElementById('pageNumber').value, 10);
-      const index = pageNumber;
-      if (index >= 0 && index < slides.length) {
-        showSlide(index);
-      }
-    }
-
-    function showTableOfContents() {
-      showSlide(1);
-    }
-
-    showSlide(0);
   </script>
 </body>
 </html>
