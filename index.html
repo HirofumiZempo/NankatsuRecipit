@@ -8,23 +8,21 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100%;
     }
     #main-container {
-      height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end; /* Change here */
+      justify-content: flex-end;
       align-items: center;
     }
     #slides {
-      flex: 1; /* Change here */
+      flex: 1;
       width: 100%;
       max-width: 90vw;
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative; /* Change here */
+      position: relative;
     }
     .slide {
       display: none;
@@ -63,60 +61,65 @@
   </div>
 
   <script>
-// スライドを動的に生成
-const slideContainer = document.getElementById('slides');
-for (let i = 0; i <= 118; i++) {
-  const fileNameIndex = i + 1;
-  const zeroFilled = String(fileNameIndex).padStart(3, '0');
-  const slide = document.createElement('div');
-  slide.className = 'slide';
-  const img = document.createElement('img');
-  img.src = `png/NankatsuRecipit_ページ_${zeroFilled}.png`;
-  img.alt = `スライド${i}`;
-  slide.appendChild(img);
-  slideContainer.appendChild(slide);
-}
+    function updateHeight() {
+      const vh = window.innerHeight;
+      document.getElementById('main-container').style.height = vh + 'px';
+    }
 
-let currentSlide = 0;
-const slides = document.querySelectorAll('.slide');
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
 
-function showSlide(index) {
-  slides[currentSlide].style.display = 'none';
-  slides[currentSlide].style.alignItems = '';
-  slides[currentSlide].style.justifyContent = '';
+    const slideContainer = document.getElementById('slides');
+    for (let i = 0; i <= 118; i++) {
+      const fileNameIndex = i + 1;
+      const zeroFilled = String(fileNameIndex).padStart(3, '0');
+      const slide = document.createElement('div');
+      slide.className = 'slide';
+      const img = document.createElement('img');
+      img.src = `png/NankatsuRecipit_ページ_${zeroFilled}.png`;
+      img.alt = `スライド${i}`;
+      slide.appendChild(img);
+      slideContainer.appendChild(slide);
+    }
 
-  slides[index].style.display = 'flex';
-  slides[index].style.alignItems = 'center';
-  slides[index].style.justifyContent = 'center';
-  currentSlide = index;
-  document.getElementById('pageNumber').value = index;
-}
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
 
-function nextSlide() {
-  let nextSlideIndex = (currentSlide + 1) % slides.length;
-  showSlide(nextSlideIndex);
-}
+    function showSlide(index) {
+      slides[currentSlide].style.display = 'none';
+      slides[currentSlide].style.alignItems = '';
+      slides[currentSlide].style.justifyContent = '';
 
-function prevSlide() {
-  let prevSlideIndex = (currentSlide - 1 + slides.length) % slides.length;
-  showSlide(prevSlideIndex);
-}
+      slides[index].style.display = 'flex';
+      slides[index].style.alignItems = 'center';
+      slides[index].style.justifyContent = 'center';
+      currentSlide = index;
+      document.getElementById('pageNumber').value = index;
+    }
 
-function jumpToSlide() {
-  const pageNumber = parseInt(document.getElementById('pageNumber').value, 10);
-  const index = pageNumber;
-  if (index >= 0 && index < slides.length) {
-    showSlide(index);
-  }
-}
+    function nextSlide() {
+      let nextSlideIndex = (currentSlide + 1) % slides.length;
+      showSlide(nextSlideIndex);
+    }
 
-function showTableOfContents() {
-  showSlide(1);  // もくじに該当する1ページ目にジャンプ
-}
+    function prevSlide() {
+      let prevSlideIndex = (currentSlide - 1 + slides.length) % slides.length;
+      showSlide(prevSlideIndex);
+    }
 
-// 初期スライドを表示
-showSlide(0);
+    function jumpToSlide() {
+      const pageNumber = parseInt(document.getElementById('pageNumber').value, 10);
+      const index = pageNumber;
+      if (index >= 0 && index < slides.length) {
+        showSlide(index);
+      }
+    }
 
+    function showTableOfContents() {
+      showSlide(1);
+    }
+
+    showSlide(0);
   </script>
 </body>
 </html>
