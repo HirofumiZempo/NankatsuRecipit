@@ -11,14 +11,21 @@
       width: 100%;
       height: 100%;
     }
+    #main-container {
+      height: calc(100vh - 50px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
     #slides {
-      width: 90vw;  /* 5%の余白を左右に追加 */
-      height: calc(80vh);  /* 5%の余白を上下に追加 */
+      width: 90vw;
+      height: calc(75vh - 50px);
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      margin: 5vh auto;  /* 上下に5%の余白 */
+      margin-bottom: 10px;
     }
     .slide {
       display: none;
@@ -26,32 +33,42 @@
     }
     .slide img {
       max-width: 90vw;
-      max-height: calc(80vh);
+      max-height: calc(75vh);
       object-fit: contain;
     }
     #button-container {
       text-align: center;
-      height: auto;  /* 高さを自動に */
-      padding: 1rem;  /* 内部に少し余白を追加 */
+      height: auto;
+      padding: 1rem;
       background-color: rgba(255, 255, 255, 0.8);
-      font-size: 1.5rem;  /* ボタンの文字サイズを少し小さく */
-      margin: 0 5%;  /* 左右に5%の余白 */
+      font-size: 1.5rem;
+      margin: 0 5%;
+    }
+    /* Add margin around each button */
+    #button-container button {
+      margin: 0 20px;
+    }
+    #pageNumber {
+      font-size: 1.5rem;
+      vertical-align: middle;
+      margin: 0 20px;  /* Add margin around the input field */
     }
   </style>
 </head>
 <body>
-
-<div id="slides">
-  <!-- JavaScriptでスライドを動的に生成 -->
-</div>
-
-<div id="button-container">
-  <button onclick="showTableOfContents()">もくじ</button>
-  <button onclick="prevSlide()">前へ</button>
-  <button onclick="nextSlide()">次へ</button>
-  <input type="number" id="pageNumber" min="1" max="119" style="font-size: 1.5rem;">  <!-- フォームの文字サイズを少し小さく -->
-  <button onclick="jumpToSlide()">ジャンプ</button>
-</div>
+  <!-- 新しい全体のコンテナを追加 -->
+  <div id="main-container">
+    <div id="slides">
+      <!-- JavaScriptでスライドを動的に生成 -->
+    </div>
+    <div id="button-container">
+      <button onclick="showTableOfContents()">もくじ</button>
+      <button onclick="prevSlide()">前へ</button>
+      <button onclick="nextSlide()">次へ</button>
+      <input type="number" id="pageNumber" min="1" max="119">
+      <button onclick="jumpToSlide()">ジャンプ</button>
+    </div>
+  </div>
 
 <script>
 // スライドを動的に生成
