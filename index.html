@@ -45,6 +45,10 @@
       width: 100%;
       max-width: 90vw;
     }
+    #button-container button {
+      width: 100px;  /* 幅を100pxに固定 */
+      height: 50px; /* 高さを50pxに固定 */
+    }
   </style>
 </head>
 <body>
@@ -64,11 +68,6 @@
     function updateHeight() {
       const vh = window.innerHeight;
       document.getElementById('main-container').style.height = vh + 'px';
-
-      // ボタンの高さの最大値をビューポートの高さの10分の1に設定
-      const buttonMaxHeight = vh / 10;
-      document.getElementById('button-container').style.maxHeight = buttonMaxHeight + 'px';
-    }
 
     updateHeight();
     window.addEventListener('resize', updateHeight);
