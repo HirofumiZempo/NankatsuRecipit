@@ -44,7 +44,7 @@
       font-size: 1.5rem;
       width: 100%;
       max-width: 90vw;
-      padding-bottom: 0.2rem;
+      padding-bottom: calc(0.2rem + env(safe-area-inset-bottom));  /* iOS対応 */
     }
     #margin-space {
       width: 100%;
