@@ -11,47 +11,41 @@
       height: 100%;
     }
     #main-container {
-      height: calc(100vh - 100px);
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-end; /* Change here */
       align-items: center;
     }
     #slides {
-      width: 90vw;
-      height: calc(75vh - 100px);
+      flex: 1; /* Change here */
+      width: 100%;
+      max-width: 90vw;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
-      margin-bottom: 10px;
+      position: relative; /* Change here */
     }
     .slide {
       display: none;
       position: absolute;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
     }
     .slide img {
-      width: auto;
-      height: auto;
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
     }
     #button-container {
       text-align: center;
-      height: auto;
       padding: 1rem;
       background-color: rgba(255, 255, 255, 0.8);
       font-size: 1.5rem;
-      margin: 0 5%;
-    }
-    #button-container button {
-      margin: 0 20px;
-    }
-    #pageNumber {
-      font-size: 1.5rem;
-      vertical-align: middle;
-      margin: 0 20px;
+      width: 100%;
+      max-width: 90vw;
     }
   </style>
 </head>
@@ -69,65 +63,60 @@
   </div>
 
   <script>
-    // Add an event listener to resize slides when window is resized
-    window.addEventListener('resize', resizeSlide);
+// スライドを動的に生成
+const slideContainer = document.getElementById('slides');
+for (let i = 0; i <= 118; i++) {
+  const fileNameIndex = i + 1;
+  const zeroFilled = String(fileNameIndex).padStart(3, '0');
+  const slide = document.createElement('div');
+  slide.className = 'slide';
+  const img = document.createElement('img');
+  img.src = `png/NankatsuRecipit_ページ_${zeroFilled}.png`;
+  img.alt = `スライド${i}`;
+  slide.appendChild(img);
+  slideContainer.appendChild(slide);
+}
 
-    function resizeSlide() {
-      const containerHeight = window.innerHeight - 100;  // 100px is for the button-container height
-      const containerWidth = window.innerWidth * 0.9;  // 90vw
-      document.getElementById('slides').style.height = `${Math.min(containerHeight, containerWidth * (75 / 90)) - 100}px`; 
-    }
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
 
-    // Dynamically generate slides
-    const slideContainer = document.getElementById('slides');
-    for (let i = 0; i <= 118; i++) {
-      const fileNameIndex = i + 1;
-      const zeroFilled = String(fileNameIndex).padStart(3, '0');
-      const slide = document.createElement('div');
-      slide.className = 'slide';
-      const img = document.createElement('img');
-      img.src = `png/NankatsuRecipit_ページ_${zeroFilled}.png`;
-      img.alt = `スライド${i}`;
-      slide.appendChild(img);
-      slideContainer.appendChild(slide);
-    }
+function showSlide(index) {
+  slides[currentSlide].style.display = 'none';
+  slides[currentSlide].style.alignItems = '';
+  slides[currentSlide].style.justifyContent = '';
 
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
+  slides[index].style.display = 'flex';
+  slides[index].style.alignItems = 'center';
+  slides[index].style.justifyContent = 'center';
+  currentSlide = index;
+  document.getElementById('pageNumber').value = index;
+}
 
-    function showSlide(index) {
-      slides[currentSlide].style.display = 'none';
-      slides[index].style.display = 'block';
-      currentSlide = index;
-      document.getElementById('pageNumber').value = index;
-    }
+function nextSlide() {
+  let nextSlideIndex = (currentSlide + 1) % slides.length;
+  showSlide(nextSlideIndex);
+}
 
-    function nextSlide() {
-      let nextSlideIndex = (currentSlide + 1) % slides.length;
-      showSlide(nextSlideIndex);
-    }
+function prevSlide() {
+  let prevSlideIndex = (currentSlide - 1 + slides.length) % slides.length;
+  showSlide(prevSlideIndex);
+}
 
-    function prevSlide() {
-      let prevSlideIndex = (currentSlide - 1 + slides.length) % slides.length;
-      showSlide(prevSlideIndex);
-    }
+function jumpToSlide() {
+  const pageNumber = parseInt(document.getElementById('pageNumber').value, 10);
+  const index = pageNumber;
+  if (index >= 0 && index < slides.length) {
+    showSlide(index);
+  }
+}
 
-    function jumpToSlide() {
-      const pageNumber = parseInt(document.getElementById('pageNumber').value, 10);
-      const index = pageNumber;
-      if (index >= 0 && index < slides.length) {
-        showSlide(index);
-      }
-    }
+function showTableOfContents() {
+  showSlide(1);  // もくじに該当する1ページ目にジャンプ
+}
 
-    function showTableOfContents() {
-      showSlide(1);  // Jump to the first page for the table of contents
-    }
+// 初期スライドを表示
+showSlide(0);
 
-    // Show the initial slide
-    showSlide(0);
-    // Adjust the size of the slide
-    resizeSlide();
   </script>
 </body>
 </html>
