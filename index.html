@@ -132,6 +132,34 @@
       showSlide(1);
     }
 
+  // タッチ開始点
+  let start_x;
+
+  // タッチ開始時のイベント
+  function touchStart(event) {
+    start_x = event.touches[0].pageX;
+  }
+
+  // タッチ終了時のイベント
+  function touchEnd(event) {
+    let end_x = event.changedTouches[0].pageX;
+    let distance = end_x - start_x;
+
+    // 左フリック
+    if (distance < -50) {
+      nextSlide();
+    }
+
+    // 右フリック
+    if (distance > 50) {
+      prevSlide();
+    }
+  }
+
+  // タッチイベントをスライドコンテナに適用
+  slideContainer.addEventListener('touchstart', touchStart);
+  slideContainer.addEventListener('touchend', touchEnd);
+
     showSlide(0);
 
 
