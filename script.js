@@ -1,51 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>NankatsuSC_Recipit</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-    }
-    #slides {
-      width: 100vw;
-      height: calc(100vh - 10vh);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-    .slide {
-      display: none;
-      position: absolute;
-    }
-    .slide img {
-      max-width: 100vw;
-      max-height: calc(100vh - 10vh);
-      object-fit: contain;
-    }
-    #button-container {
-      text-align: center;
-      height: 10vh;
-      background-color: rgba(255, 255, 255, 0.8);
-    }
-  </style>
-</head>
-<body>
-
-<div id="slides">
-  <!-- JavaScriptでスライドを動的に生成 -->
-</div>
-
-<div id="button-container">
-  <button onclick="showTableOfContents()">もくじ</button>
-  <button onclick="prevSlide()">前へ</button>
-  <button onclick="nextSlide()">次へ</button>
-  <input type="number" id="pageNumber" min="1" max="119">
-  <button onclick="jumpToSlide()">ジャンプ</button>
-</div>
-
-<script>
 // スライドを動的に生成
 const slideContainer = document.getElementById('slides');
 for (let i = 0; i <= 118; i++) {
@@ -94,8 +46,3 @@ function showTableOfContents() {
 
 // 初期スライドを表示
 showSlide(0);
-
-</script>
-
-</body>
-</html>

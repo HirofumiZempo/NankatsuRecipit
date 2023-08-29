@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NankatsuSC_Recipit</title>
+  <!-- Viewport 設定を追加 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #slides {
+      width: 90vw;  /* 5%の余白を左右に追加 */
+      height: calc(80vh);  /* 5%の余白を上下に追加 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      margin: 5vh auto;  /* 上下に5%の余白 */
+    }
+    .slide {
+      display: none;
+      position: absolute;
+    }
+    .slide img {
+      max-width: 90vw;
+      max-height: calc(80vh);
+      object-fit: contain;
+    }
+    #button-container {
+      text-align: center;
+      height: auto;  /* 高さを自動に */
+      padding: 1rem;  /* 内部に少し余白を追加 */
+      background-color: rgba(255, 255, 255, 0.8);
+      font-size: 1.5rem;  /* ボタンの文字サイズを少し小さく */
+      margin: 0 5%;  /* 左右に5%の余白 */
+    }
+  </style>
+  <script defer src="script.js"></script>
+</head>
+<body>
+
+<div id="slides">
+  <!-- JavaScriptでスライドを動的に生成 -->
+</div>
+
+<div id="button-container">
+  <button onclick="showTableOfContents()">もくじ</button>
+  <button onclick="prevSlide()">前へ</button>
+  <button onclick="nextSlide()">次へ</button>
+  <input type="number" id="pageNumber" min="1" max="119" style="font-size: 1.5rem;">  <!-- フォームの文字サイズを少し小さく -->
+  <button onclick="jumpToSlide()">ジャンプ</button>
+</div>
+
+</body>
+</html>
