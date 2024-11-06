@@ -3,7 +3,7 @@
 <head>
   <title>NankatsuSC_Recipit</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css?v=20231110">
+  <link rel="stylesheet" href="style.css?v=20231109">
   <style>
     body, html {
       margin: 0;
@@ -51,12 +51,53 @@
       width: 100%;
       max-width: 90vw;
     }
+    #swipe-arrows {
+      position: absolute;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      opacity: 1;
+      animation: fadeOut 5s forwards;
+    }
+    
+    .arrow {
+      font-size: 3rem;
+      color: rgba(0, 0, 0, 0.6);
+      animation: slide 0.5s infinite alternate;
+    }
+
+    @keyframes slide {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(10px);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
   </style>
 </head>
 <body>
   <div id="main-container">
     <div id="slides">
+    <div id="swipe-arrows">
+        <div class="arrow" style="padding-left: 1rem;">←</div>
+        <div class="arrow" style="padding-right: 1rem;">→</div>
     </div>
+    </div>
+    
     <div id="button-container">
       <button onclick="showTableOfContents()">もくじ</button>
       <button onclick="prevSlide()">前へ</button>
@@ -84,13 +125,13 @@
     window.addEventListener('resize', updateHeight);
 
     const slideContainer = document.getElementById('slides');
-    for (let i = 0; i <= 120; i++) {
+    for (let i = 0; i <= 119; i++) {
       const fileNameIndex = i + 1;
       const zeroFilled = String(fileNameIndex).padStart(3, '0');
       const slide = document.createElement('div');
       slide.className = 'slide';
       const img = document.createElement('img');
-      img.src = `jpeg/NankatsuRecipit_ページ_${zeroFilled}.jpg`;
+      img.src = `png/NankatsuRecipit_ページ_${zeroFilled}.png`;
       img.alt = `スライド${i}`;
       slide.appendChild(img);
       slideContainer.appendChild(slide);
@@ -163,8 +204,12 @@
 
     showSlide(0);
 
+  setTimeout(() => {
+    document.getElementById('swipe-arrows').style.display = 'none';
+  }, 5000);
+
 
   </script>
-  <script src="script.js?v=20231110"></script>
+  <script src="script.js?v=20231109"></script>
 </body>
 </html>
