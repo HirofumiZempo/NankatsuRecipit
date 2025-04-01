@@ -1,225 +1,1130 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3K7NEDPTYG"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-3K7NEDPTYG');
-</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>NankatsuSC_Recipit</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css?v=20241106">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3K7NEDPTYG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3K7NEDPTYG');
+  </script>
+
+  <!-- <link rel="stylesheet" href="style.css?v=20250401"> -->
   <style>
-    body, html {
+    /* --- 基本設定 --- */
+    :root {
+      /* 色変数 */
+      --background-color: #f0f0f0;
+      --text-color: #333;
+      --primary-color: #005bac; /* 南葛SCブルー */
+      --primary-text-color: #ffffff;
+      --toc-button-bg-color: rgba(255, 102, 0, 1); /* もくじボタン背景色　GKオレンジ　*/
+      --toc-button-text-color: #000000; /* もくじボタン文字色 */
+      --glass-bg-color: rgba(255, 255, 255, 0.7);
+      --glass-blur: 8px;
+      --glass-border-color: rgba(255, 255, 255, 0.9);
+      --swipe-icon-bg: rgba(0, 0, 0, 0.4);
+      --swipe-icon-color: white;
+      --slider-thumb-color: var(--primary-color); /* Fallback or border if needed */
+      --slider-track-color: #ddd;
+      --slider-track-border-color: #ccc;
+      --slider-thumb-size: 35px; /* サッカーボールのサイズ */
+      --slider-track-height: 10px; /* トラックの高さ */
+      --slider-thumb-rotation: 0deg; /* JSで更新するボールの回転角度 */
+      --slider-page-number: '1'; /* JSで更新するページ番号 (CSS変数として) */
+      --slider-progress: 0%; /* JSで更新するスライダーの進捗 */
+
+      /* フォント変数 */
+      --base-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+        "Segoe UI Symbol";
+
+      /* レイアウト変数 */
+      --slide-gap: 10px; /* スライド間の余白 (JSでスライド生成時に適用) */
+
+      /* その他 */
+      --transition-duration: 0.3s; /* JSでのアニメーション用 */
+      --button-border-radius: 6px;
+      --loading-ball-size: 60px; /* ローディングボールの基本サイズ */
+      --loading-bounce-height: 150px; /* ローディングボールの初期落下開始高さ (中央からの相対位置) */
+      --loading-ground-offset: 40px; /* ローディングボールの跳ねる地面の位置 (中央からの相対位置、正の値で下) */
+      --loading-bounce-peak: 80px; /* ローディングボールの跳ね返り高さ (地面からの相対位置) */
+      --loading-animation-duration: 1s; /* ローディングアニメーションの時間 */
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      width: 100%;
     }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--base-font-family);
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      overflow: hidden; /* body自体のスクロールを禁止 */
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Visually Hidden */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    /* --- Loading Overlay Styles --- */
+    #loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+    }
+    #loading-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .loading-ball-container {
+        width: var(--loading-ball-size);
+        height: var(--loading-ball-size);
+        background-image: url('soccer_ball.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        animation: gravity-bounce var(--loading-animation-duration) infinite ease-out;
+    }
+    @keyframes gravity-bounce {
+      0% {
+        transform: translateY(calc(-1 * var(--loading-bounce-height)));
+        animation-timing-function: cubic-bezier(0.4, 0, 0.8, 0.15);
+      }
+      50% {
+        transform: translateY(var(--loading-ground-offset));
+        animation-timing-function: cubic-bezier(0.2, 0.85, 0.6, 1);
+      }
+      75% {
+        transform: translateY(calc(var(--loading-ground-offset) - var(--loading-bounce-peak)));
+        animation-timing-function: cubic-bezier(0.4, 0, 0.8, 0.15);
+      }
+      100% {
+        transform: translateY(var(--loading-ground-offset));
+      }
+    }
+
+    /* --- Main Layout --- */
     #main-container {
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
-      align-items: center;
-    }
-    #slides {
-      flex-grow: 1;
       width: 100%;
-      max-width: 90vw;
+      height: 100%;
+      max-width: 100vw;
+      overflow: hidden; /* コンテナ外へのオーバーフローを隠す */
+      position: relative;
+    }
+
+    /* --- Slides Container (Scrollable Area) --- */
+    #slides {
+      flex-grow: 1; /* 利用可能なスペースを埋める */
+      display: flex; /* スライドを横並びにする */
+      overflow-x: auto; /* 横スクロールを有効にする */
+      overflow-y: hidden; /* 縦スクロールを無効にする */
+      scroll-snap-type: x mandatory; /* 横方向のスクロールスナップを強制 */
+      /* scroll-behavior: smooth; */ /* JSで制御するため不要 */
+      -webkit-overflow-scrolling: touch; /* iOSでの慣性スクロール */
+      /* gap はJSでスライド生成時に設定 */
+      width: 100%;
+      position: relative; /* スワイプインジケーターなどの基準点 */
+      background-color: #fff; /* スライド間の背景色 */
+    }
+
+    /* --- Individual Slide --- */
+    .slide {
+      flex: 0 0 100%; /* 各スライドがコンテナ幅全体を占める */
+      width: 100%; /* flex-basisと合わせて指定 */
+      height: 100%;
+      scroll-snap-align: center; /* スライドの中央でスナップ */
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative;
-    }
-    .slide {
-      display: none;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      align-items: center;
-      justify-content: center;
+      overflow: hidden; /* スライド内のコンテンツがはみ出ないように */
+      padding: 0 calc(var(--slide-gap) / 2); /* 左右にギャップの半分を適用 */
     }
     .slide img {
+      display: block;
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
     }
-    #button-container {
-      text-align: center;
-      padding: 0.3rem;
-      background-color: rgba(255, 255, 255, 0.8);
-      font-size: 1.5rem;
-      width: 100%;
-      max-width: 90vw;
-      padding-bottom: calc(0.2rem + env(safe-area-inset-bottom));  /* iOS対応 */
-    }
-    #margin-space {
-      width: 100%;
-      max-width: 90vw;
-    }
-    #swipe-arrows {
-      position: absolute;
-      width: 100%;
+
+    /* --- Swipe Indicator --- */
+    #swipe-indicator {
+      position: absolute; /* Position relative to #main-container */
+      bottom: calc(env(safe-area-inset-bottom) + 60px); /* Adjust as needed above button bar */
+      right: 0.8rem;
+      width: 45px;
+      height: 45px;
+      background-color: var(--swipe-icon-bg);
+      border-radius: 50%;
+      color: var(--swipe-icon-color);
       display: flex;
-      justify-content: space-between;
-      top: 53%; /*矢印の位置を調節 */
-      transform: translateY(-50%);
-      pointer-events: none;
-      opacity: 1;
-      animation: fadeOut 5s forwards;
-      z-index: 1; /* 矢印を画像の上に表示する */
+      justify-content: center;
+      align-items: center;
+      font-size: 1.4rem;
+      z-index: 5;
+      opacity: 0; /* 初期状態は非表示、JSで表示 */
+      visibility: hidden;
+      transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, bottom 0.3s ease;
+      pointer-events: none; /* 操作の邪魔にならないように */
+    }
+    #swipe-indicator.is-visible {
+        opacity: 1;
+        visibility: visible;
+        animation: subtle-pulse-vertical 2s infinite ease-in-out;
+    }
+    #swipe-indicator.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      animation: none;
+    }
+    @keyframes subtle-pulse-vertical {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+
+    /* --- Button Container (スライダーを含む) --- */
+    #button-container {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      padding-bottom: calc(0.6rem + env(safe-area-inset-bottom));
+      background-color: var(--glass-bg-color);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-top: 1px solid var(--glass-border-color);
+      box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.08);
+      display: flex;
+      justify-content: center; /* Default: center buttons */
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap; /* Allow wrapping on very small screens */
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0; /* スライド領域が伸びてもボタン領域は縮まないように */
+      /* スライダーの高さを考慮して最小高さを設定 */
+      min-height: calc(max(var(--slider-track-height), var(--slider-thumb-size)) + 1.2rem); /* padding考慮 */
+    }
+
+    /* --- UI要素 (ボタン、入力欄) --- */
+    #button-container button,
+    #button-container input[type="number"] {
+      padding: 0.5rem 0.9rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: var(--button-border-radius);
+      cursor: pointer;
+      transition: background-color var(--transition-duration) ease,
+                  transform 0.1s ease;
+      background-color: var(--primary-color);
+      color: var(--primary-text-color);
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      font-weight: 500; /* 少し太字に */
+      flex-shrink: 0; /* Prevent buttons from shrinking too much */
+    }
+    #button-container button:hover {
+      opacity: 0.9;
+    }
+    #button-container button:active {
+      transform: scale(0.96);
+      /* background-color: var(--primary-color); */ /* Keep original color on active */
+      opacity: 0.8;
+    }
+    /* Specific style for TOC button */
+    #tocButton {
+        background-color: var(--toc-button-bg-color);
+        color: var(--toc-button-text-color);
+    }
+    #tocButton:active {
+        background-color: var(--toc-button-bg-color); /* Keep TOC color on active */
+        opacity: 0.8;
+    }
+
+    #button-container input[type="number"] {
+      width: 4.5em;
+      text-align: center;
+      background-color: #fff;
+      color: var(--text-color);
+      border: 1px solid #ccc;
+      -moz-appearance: textfield;
+      font-weight: normal; /* 入力欄は通常 */
+    }
+    #button-container input[type="number"]::-webkit-outer-spin-button,
+    #button-container input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* --- ページスライダー (幅広画面用) --- */
+    #page-slider-container {
+      display: none; /* Hide by default, shown via media query */
+      flex-grow: 1; /* Take available space between buttons */
+      min-width: 150px; /* Minimum width */
+      margin: 0 0.5rem; /* Spacing between buttons/slider */
+      height: max(var(--slider-track-height), var(--slider-thumb-size));
+      display: flex;
+      align-items: center; /* Vertically center the slider track/thumb */
+      position: relative; /* For datalist positioning */
+    }
+
+    #page-slider {
+      display: block;
+      width: 100%;
+      height: var(--slider-track-height); /* Track height */
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent; /* Remove default background */
+      border-radius: calc(var(--slider-track-height) / 2);
+      outline: none;
+      margin: 0; /* Reset margin */
+      padding: 0; /* Reset padding */
+      /* Style to show progress (requires JS to update --slider-progress) */
+      background: linear-gradient(to right,
+          var(--primary-color) 0%,
+          var(--primary-color) var(--slider-progress, 0%), /* Filled part */
+          var(--slider-track-color) var(--slider-progress, 0%), /* Unfilled part */
+          var(--slider-track-color) 100%
+      );
+      border: 1px solid var(--slider-track-border-color);
+      /* transition: background 0.1s linear; */ /* Might interfere with thumb drag feel */
+    }
+
+    /* --- Slider Track Styling --- */
+    #page-slider::-webkit-slider-runnable-track {
+      width: 100%;
+      height: var(--slider-track-height);
+      cursor: pointer;
+      background: transparent; /* Use the main element's background */
+      border-radius: calc(var(--slider-track-height) / 2);
+      border: none; /* Border is on the main element */
+    }
+    #page-slider::-moz-range-track {
+      width: 100%;
+      height: var(--slider-track-height);
+      cursor: pointer;
+      background: transparent; /* Use the main element's background */
+      border-radius: calc(var(--slider-track-height) / 2);
+      border: none; /* Border is on the main element */
+    }
+
+    /* --- Slider Thumb Styling (Soccer Ball) --- */
+    #page-slider::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      border: none; /* Remove border */
+      height: var(--slider-thumb-size);
+      width: var(--slider-thumb-size);
+      border-radius: 50%;
+      background-image: url('soccer_ball.png'); /* Soccer ball image */
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: transparent; /* Ensure image transparency works */
+      cursor: grab;
+      /* Vertically center thumb relative to the track */
+      margin-top: calc((var(--slider-track-height) - var(--slider-thumb-size)) / 2);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      /* Transition for scale effect on active, rotation handled by JS */
+      transition: transform 0.1s ease;
+      transform: rotate(var(--slider-thumb-rotation)); /* Apply rotation to the ball */
+      position: relative; /* For pseudo-element positioning */
+      z-index: 2; /* Ensure thumb is above track ticks */
     }
     
-    .arrow {
-      font-size: 3rem;
-      color: rgba(0, 0, 0, 0.6);
-      animation: slide 0.5s infinite alternate;
+    /* 追加: スライダーコンテナ内のページ番号表示用spanのスタイル */
+    #page-slider-container {
+        position: relative; /* spanを絶対配置するため */
     }
 
-    @keyframes slide {
-      from {
-        transform: translateX(0);
+    #slider-page-number-display {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translate(-50%, -50%);
+        font-size: 14px; /* 必要に応じて調整 */
+        font-weight: bold;
+        color: var(--primary-text-color);
+        pointer-events: none; /* クリックイベントを無効化 */
+        z-index: 3;
+        background-color: rgba(0, 0, 0, 0.5); /* 背景を追加して文字を際立たせる */
+        border-radius: 50%;
+        padding: 2px 2px;
+        /*text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5); /* 文字に影をつける */
+    }
+    
+    #page-slider::-moz-range-thumb {
+      border: none; /* Remove border */
+      height: var(--slider-thumb-size);
+      width: var(--slider-thumb-size);
+      border-radius: 50%;
+      background-image: url('soccer_ball.png'); /* Soccer ball image */
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: transparent; /* Ensure image transparency works */
+      cursor: grab;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      /* Transition for scale effect on active, rotation handled by JS */
+      transition: transform 0.1s ease;
+      transform: rotate(var(--slider-thumb-rotation)); /* Apply rotation to the ball */
+      position: relative; /* For pseudo-element positioning */
+      z-index: 2; /* Ensure thumb is above track ticks */
+      /* Firefox doesn't need margin-top typically */
+    }
+
+    /* Thumb interaction feedback */
+    #page-slider:active::-webkit-slider-thumb {
+        cursor: grabbing;
+        transform: rotate(var(--slider-thumb-rotation)) scale(1.1);
+    }
+    #page-slider:active::-moz-range-thumb {
+        cursor: grabbing;
+        transform: rotate(var(--slider-thumb-rotation)) scale(1.1);
+    }
+
+    /* --- Slider Tick Marks for Snap Points --- */
+    #slider-tickmarks {
+        position: absolute;
+        top: calc(50% - var(--slider-track-height) / 2); /* Align with track center */
+        left: calc(var(--slider-thumb-size) / 2); /* Start after thumb half-width */
+        right: calc(var(--slider-thumb-size) / 2); /* End before thumb half-width */
+        height: var(--slider-track-height);
+        pointer-events: none; /* Don't interfere with slider interaction */
+        z-index: 1; /* Behind thumb, above track background */
+        overflow: hidden; /* Ensure ticks don't overflow container */
+    }
+    .tickmark {
+        position: absolute;
+        top: -3px; /* Position slightly above the track */
+        width: 2px; /* Tick mark width */
+        height: calc(var(--slider-track-height) + 6px); /* Tick mark height (slightly taller than track) */
+        background-color: rgba(0, 0, 0, 0.3); /* Tick mark color */
+        transform: translateX(-50%); /* Center the tick mark */
+    }
+
+    /* --- レスポンシブ対応 --- */
+
+    /* Small screens (Mobile Portrait) - Slider is hidden */
+    @media (max-width: 767px) {
+      :root {
+        --loading-ball-size: 50px;
+        --loading-bounce-height: 120px;
+        --loading-ground-offset: 30px;
+        --loading-bounce-peak: 60px;
+        --slide-gap: 8px; /* スマホでは少し狭く */
       }
-      to {
-        transform: translateX(10px);
+      #button-container {
+        padding: 0.5rem 0.6rem;
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+        gap: 0.3rem;
+        flex-wrap: wrap;
+        justify-content: center; /* Center buttons when slider is hidden */
+        min-height: auto; /* Reset min-height when slider is hidden */
+      }
+      #button-container button,
+      #button-container input[type="number"] {
+        padding: 0.45rem 0.8rem;
+        font-size: 0.8rem;
+        display: inline-flex; /* Ensure jump button/input are visible */
+      }
+      #swipe-indicator {
+          right: 0.5rem;
+          bottom: calc(env(safe-area-inset-bottom) + 55px); /* Adjust for smaller button bar */
+          width: 40px;
+          height: 40px;
+          font-size: 1.2rem;
+      }
+      /* Ensure slider is hidden (already default, but explicit here) */
+      #page-slider-container {
+          display: none !important;
+      }
+      /* Show page input and jump button when slider is hidden */
+      #pageNumber, #jumpButton {
+          display: inline-flex !important;
       }
     }
 
-    @keyframes fadeOut {
-      from {
-        opacity: 1;
-      }
-      to {
-        opacity: 0;
-      }
+    /* Landscape orientation on smaller devices - Slider is hidden */
+    @media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+       :root {
+         --loading-bounce-height: 100px;
+         --loading-ground-offset: 25px;
+         --loading-bounce-peak: 50px;
+         --slide-gap: 10px;
+       }
+       #button-container {
+          padding: 0.4rem 0.8rem;
+          padding-bottom: calc(0.4rem + env(safe-area-inset-bottom));
+          gap: 0.5rem;
+          justify-content: center; /* Center buttons */
+          flex-wrap: wrap; /* Allow wrapping */
+          min-height: auto;
+       }
+       #button-container button,
+       #button-container input[type="number"] {
+         font-size: 0.8rem;
+         padding: 0.4rem 0.7rem;
+         display: inline-flex; /* Ensure jump button/input are visible */
+       }
+       #swipe-indicator {
+           right: 1rem;
+           bottom: calc(env(safe-area-inset-bottom) + 50px);
+           width: 40px;
+           height: 40px;
+       }
+       /* Ensure slider is hidden */
+       #page-slider-container {
+           display: none !important;
+       }
+       /* Show page input and jump button when slider is hidden */
+       #pageNumber, #jumpButton {
+           display: inline-flex !important;
+       }
+    }
+
+    /* Wider screens (Tablet Landscape, Desktop) - Show Slider */
+    @media (min-width: 768px) {
+        :root {
+            --slide-gap: 15px; /* 幅広画面ではギャップを広げる */
+        }
+        #button-container {
+            justify-content: space-between; /* Space out buttons and slider */
+            gap: 0.8rem;
+            padding: 0.8rem 1rem;
+            padding-bottom: calc(0.8rem + env(safe-area-inset-bottom));
+            flex-wrap: nowrap; /* Prevent wrapping when slider is shown */
+             min-height: calc(max(var(--slider-track-height), var(--slider-thumb-size)) + 1.6rem); /* padding考慮 */
+        }
+        #page-slider-container {
+           display: flex !important; /* Show slider container */
+           height: max(var(--slider-track-height), var(--slider-thumb-size));
+        }
+        /* Hide page input and jump button when slider is visible */
+        #pageNumber, #jumpButton {
+            display: none !important; /* Ensure they are hidden */
+        }
+        /* Optional: Adjust button sizes for larger screens */
+        #button-container button {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+        /* Ensure TOC button keeps its specific style */
+        #tocButton {
+            background-color: var(--toc-button-bg-color) !important;
+            color: var(--toc-button-text-color) !important;
+        }
+        #swipe-indicator {
+            right: 1rem;
+            bottom: calc(env(safe-area-inset-bottom) + 65px); /* Adjust for potentially taller button bar */
+        }
+        /* Adjust thumb margin if variables changed in this media query */
+        #page-slider::-webkit-slider-thumb {
+           margin-top: calc((var(--slider-track-height) - var(--slider-thumb-size)) / 2);
+        }
     }
 
   </style>
 </head>
 <body>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="loading-ball-container">
+       <!-- img removed, background applied via CSS -->
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
   <div id="main-container">
+    <!-- Scrollable Slides Area -->
     <div id="slides">
-    <div id="swipe-arrows">
-        <div class="arrow" style="padding-left: 1rem;">←</div>
-        <div class="arrow" style="padding-right: 1rem;">→</div>
+      <!-- Swipe indicator shown initially -->
+      <div id="swipe-indicator">
+         <!-- Icon or text can be placed here if needed, using FontAwesome for example -->
+         <!-- For simplicity, keeping it empty and relying on background/animation -->
+         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M15 5l-1.41 1.41L15.17 8H4v2h11.17l-1.58 1.59L15 13l4-4-4-4zM4 16h11.17l-1.59 1.59L15 19l4-4-4-4-1.41 1.41L15.17 14H4v2z"/></svg>
+      </div>
+      <!-- Slides will be generated here by JS -->
     </div>
-    </div>
-    
+
+    <!-- Control Buttons and Slider -->
     <div id="button-container">
-      <button onclick="showTableOfContents()">もくじ</button>
-      <button onclick="prevSlide()">前へ</button>
-      <button onclick="nextSlide()">次へ</button>
-      <input type="number" id="pageNumber" min="1" max="119">
-      <button onclick="jumpToSlide()">ジャンプ</button>
+      <button id="tocButton">もくじ</button>
+      <button id="prevButton">前へ</button>
+
+      <!-- スライダーコンテナ (幅広画面で表示) -->
+      <div id="page-slider-container">
+        <input type="range" id="page-slider" min="0" value="0"> <!-- max is set by JS -->
+        <!-- Tickmarks container -->
+        <span id="slider-page-number-display">1</span>
+        <div id="slider-tickmarks"></div>
+      </div>
+
+      <button id="nextButton">次へ</button>
+
+      <!-- ページ番号入力 (スマホ画面で表示) -->
+      <label for="pageNumber" class="visually-hidden">ページ番号:</label>
+      <input type="number" id="pageNumber" min="1"> <!-- max is set by JS -->
+      <!-- Total pages span removed -->
+      <button id="jumpButton">ジャンプ</button>
     </div>
-    <div id="margin-space"></div>  <!-- 余白を確保するためのdiv -->
   </div>
 
   <script>
-    function updateHeight() {
-      const vh = window.innerHeight;
-      const buttonHeight = vh * 0.07;  // 7%
-      const slideHeight = vh * 0.91;  // 91%
-      const marginHeight = vh * 0.02;  // 2%
+    // --- 定数定義 ---
+    const TOTAL_SLIDES = 120; // 総スライド数 (0から119)
+    const IMAGE_PATH_PREFIX = 'jpeg/NankatsuRecipit_ページ_'; // 画像パスのプレフィックス
+    const IMAGE_EXTENSION = '.jpg';
+    const TOC_PAGE_INDEX = 1; // 目次ページのインデックス (0始まり)
+    const WIDE_SCREEN_BREAKPOINT = 768; // px, should match CSS media query
+    const HANDLE_ROTATION_DEGREE = 15; // スライダーボールの回転角度/ページ
+    const SLIDE_GAP_VAR = '--slide-gap'; // CSS変数名
+    // スライダーのスナップ関連
+    const SNAP_POINTS_PAGES = [7, 44, 51, 62, 75]; // スナップさせたいページ番号 (1始まり)
+    const SNAP_POINTS_INDICES = SNAP_POINTS_PAGES.map(p => p - 1); // 0始まりのインデックスに変換
+    const SNAP_THRESHOLD = 1; // スナップする範囲 (± この値) - 2から1に変更
 
-      document.getElementById('main-container').style.height = vh + 'px';
-      document.getElementById('button-container').style.height = buttonHeight + 'px';
-      document.getElementById('slides').style.height = slideHeight + 'px';
-      document.getElementById('margin-space').style.height = marginHeight + 'px';  // 余白の高さを設定
+    // --- DOM要素取得 ---
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const mainContainer = document.getElementById('main-container'); // For CSS variables
+    const slidesContainer = document.getElementById('slides');
+    const swipeIndicator = document.getElementById('swipe-indicator');
+    const pageNumberInput = document.getElementById('pageNumber');
+    const tocButton = document.getElementById('tocButton');
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    const jumpButton = document.getElementById('jumpButton');
+    const pageSliderContainer = document.getElementById('page-slider-container');
+    const pageSlider = document.getElementById('page-slider');
+    const sliderTickmarksContainer = document.getElementById('slider-tickmarks'); // Tickmarks container
+
+    // --- 状態変数 ---
+    let currentSlideIndex = 0;
+    let slides = []; // スライド要素(div)を格納する配列
+    let windowWidth = window.innerWidth;
+    let isScrollingProgrammatically = false; // Programmatic scroll flag
+    let scrollEndTimer; // Timer for scroll end detection
+    let isDraggingSlider = false; // Slider drag flag
+    let initialLoadComplete = false; // Flag for initial load
+
+    // --- 関数定義 ---
+
+    /**
+     * スライドを指定したインデックスにスクロール表示
+     * @param {number} index 表示するスライドのインデックス (0始まり)
+     * @param {ScrollBehavior} behavior 'smooth' or 'auto'
+     */
+    function showSlide(index, behavior = 'smooth') {
+      if (!initialLoadComplete) behavior = 'auto'; // Prevent smooth scroll on initial load
+      if (index < 0 || index >= TOTAL_SLIDES) {
+        console.warn('Invalid slide index:', index);
+        index = Math.max(0, Math.min(index, TOTAL_SLIDES - 1));
+      }
+
+      const slideElement = slides[index];
+      if (!slideElement) {
+          console.error(`Slide element at index ${index} not found.`);
+          return;
+      }
+
+      // 目標スクロール位置を計算 (gapを考慮しない単純計算、scroll-snapが処理)
+      const containerWidth = slidesContainer.offsetWidth;
+      // スナップがあるので、各スライドの開始位置は index * containerWidth で良いはず
+      const scrollLeftPosition = index * containerWidth;
+
+      // 状態を先に更新 (これによりスライダー等が即座に反応)
+      updateCurrentState(index);
+
+      isScrollingProgrammatically = true; // Set flag before scrolling
+      slidesContainer.scrollTo({
+        left: scrollLeftPosition,
+        behavior: behavior
+      });
+
+      // スムーズスクロールの場合、完了を待たずにフラグをリセットするタイマーを設定
+      // 'auto'の場合は即時完了とみなす
+      clearTimeout(scrollEndTimer); // Clear any existing scroll end timer
+      if (behavior === 'smooth') {
+          // スムーズスクロールのアニメーション時間より少し長めに設定
+          setTimeout(() => {
+              isScrollingProgrammatically = false;
+              // 念のため、最終的な位置を確認して状態を再同期
+              const actualIndex = getCurrentIndexFromScroll();
+              if (actualIndex !== currentSlideIndex) {
+                  console.log("Correcting index after smooth scroll timeout");
+                  updateCurrentState(actualIndex);
+              }
+          }, 500); // Adjust time based on typical smooth scroll duration
+      } else {
+          // 'auto' scroll is synchronous (or very fast)
+          isScrollingProgrammatically = false;
+      }
+
+      hideSwipeIndicator();
     }
 
-    updateHeight();
-    window.addEventListener('resize', updateHeight);
+    /**
+     * スクロール位置から現在のスライドインデックスを計算
+     * @returns {number} Current slide index
+     */
+    function getCurrentIndexFromScroll() {
+        const containerWidth = slidesContainer.offsetWidth;
+        const scrollLeft = slidesContainer.scrollLeft;
+        if (containerWidth === 0) return currentSlideIndex; // Avoid division by zero, return last known index
 
-    const slideContainer = document.getElementById('slides');
-    for (let i = 0; i <= 119; i++) {
-      const fileNameIndex = i + 1;
-      const zeroFilled = String(fileNameIndex).padStart(3, '0');
-      const slide = document.createElement('div');
-      slide.className = 'slide';
-      const img = document.createElement('img');
-      img.src = `jpeg/NankatsuRecipit_ページ_${zeroFilled}.jpg`;
-      img.alt = `スライド${i}`;
-      slide.appendChild(img);
-      slideContainer.appendChild(slide);
+        // scroll-snap-type: mandatory があるため、中央に近い要素のインデックスを計算
+        const index = Math.round(scrollLeft / containerWidth);
+
+        return Math.max(0, Math.min(index, TOTAL_SLIDES - 1)); // Clamp index
     }
 
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
+    /**
+     * アプリケーションの状態を現在のスライドインデックスに基づいて更新
+     * @param {number} index 新しい現在のスライドインデックス
+     */
+    function updateCurrentState(index) {
+        if (index < 0 || index >= TOTAL_SLIDES) return; // Safety check
 
-    function showSlide(index) {
-      slides[currentSlide].style.display = 'none';
-      slides[currentSlide].style.alignItems = '';
-      slides[currentSlide].style.justifyContent = '';
+        // Avoid redundant updates if index hasn't changed
+        if (index === currentSlideIndex && initialLoadComplete) {
+             // Also check if slider value needs update (e.g., after resize)
+             if (pageSlider && parseInt(pageSlider.value) !== index) {
+                 pageSlider.value = index;
+                 updateSliderVisuals(index);
+             }
+             return;
+        }
 
-      slides[index].style.display = 'flex';
-      slides[index].style.alignItems = 'center';
-      slides[index].style.justifyContent = 'center';
-      currentSlide = index;
-      document.getElementById('pageNumber').value = index;
+        // console.log(`Updating state to index: ${index}`);
+        currentSlideIndex = index;
+        pageNumberInput.value = currentSlideIndex; // ページ番号は0始まり
+
+        updatePageSlider(); // スライダーの値と見た目を更新
+        updateNavButtons(); // ナビゲーションボタンの状態を更新
     }
 
+    /** スライダーの見た目（CSS変数）を更新 */
+    function updateSliderVisuals(index) {
+        if (!pageSlider || TOTAL_SLIDES <= 1) return;
+        const percentage = (TOTAL_SLIDES > 1) ? (index / (TOTAL_SLIDES - 1)) * 100 : 0;
+        const rotation = index * HANDLE_ROTATION_DEGREE;
+        const pageNum = index;
+
+        // CSS変数を更新 (要素に直接セット)
+        pageSlider.style.setProperty('--slider-progress', `${percentage}%`);
+        pageSlider.style.setProperty('--slider-thumb-rotation', `${rotation}deg`);
+        // CSS変数 '--slider-page-number' を更新 (contentプロパティ用)
+        // contentプロパティは文字列を期待するため、クォートで囲む
+        pageSlider.style.setProperty('--slider-page-number', pageNum);
+    }
+
+    /** スライダーの value と見た目の両方を更新 */
+    function updatePageSlider() {
+        if (!pageSlider || TOTAL_SLIDES <= 1) return;
+        // スライダーの input value を更新
+        if (parseInt(pageSlider.value) !== currentSlideIndex) {
+            pageSlider.value = currentSlideIndex;
+        }
+        // スライダーの見た目（CSS変数）を更新
+        updateSliderVisuals(currentSlideIndex);
+    }
+
+
+    /** 前へ/次へボタンの状態を更新 */
+    function updateNavButtons() {
+        prevButton.disabled = currentSlideIndex === 0;
+        nextButton.disabled = currentSlideIndex === TOTAL_SLIDES - 1;
+    }
+
+    /** 次のスライドへ */
     function nextSlide() {
-      let nextSlideIndex = (currentSlide + 1) % slides.length;
-      showSlide(nextSlideIndex);
-    }
-
-    function prevSlide() {
-      let prevSlideIndex = (currentSlide - 1 + slides.length) % slides.length;
-      showSlide(prevSlideIndex);
-    }
-
-    function jumpToSlide() {
-      const pageNumber = parseInt(document.getElementById('pageNumber').value, 10);
-      const index = pageNumber;
-      if (index >= 0 && index < slides.length) {
-        showSlide(index);
+      if (currentSlideIndex < TOTAL_SLIDES - 1) {
+        showSlide(currentSlideIndex + 1, 'smooth');
       }
     }
 
+    /** 前のスライドへ */
+    function prevSlide() {
+      if (currentSlideIndex > 0) {
+        showSlide(currentSlideIndex - 1, 'smooth');
+      }
+    }
+
+    /** 指定ページへジャンプ */
+    function jumpToSlide() {
+      const pageNumber = parseInt(pageNumberInput.value, 10);
+      if (!isNaN(pageNumber) && pageNumber >= 0 && pageNumber <= TOTAL_SLIDES) {
+        showSlide(pageNumber, 'auto'); // Use 'auto' for instant jump
+      } else {
+        pageNumberInput.value = currentSlideIndex + 1; // Reset to current page
+        alert(`1から${TOTAL_SLIDES}の間のページ番号を入力してください。`);
+      }
+    }
+
+    /** 目次ページを表示 */
     function showTableOfContents() {
-      showSlide(1);
+      showSlide(TOC_PAGE_INDEX, 'auto'); // Jump to TOC
     }
 
-  // タッチ開始点
-  let start_x;
-
-  // タッチ開始時のイベント
-  function touchStart(event) {
-    start_x = event.touches[0].pageX;
-  }
-
-  // タッチ終了時のイベント
-  function touchEnd(event) {
-    let end_x = event.changedTouches[0].pageX;
-    let distance = end_x - start_x;
-
-    // 左フリック
-    if (distance < -50) {
-      nextSlide();
+    /** スワイプ指示アイコンを表示 */
+    function showSwipeIndicator() {
+        // Show only if not already hidden and on touch devices potentially
+        if (swipeIndicator && swipeIndicator.classList.contains('is-hidden')) {
+             // Simple check for touch device (not foolproof)
+             const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+             if (isTouchDevice) {
+                 swipeIndicator.classList.remove('is-hidden');
+                 swipeIndicator.classList.add('is-visible');
+             }
+        }
     }
 
-    // 右フリック
-    if (distance > 50) {
-      prevSlide();
+    /** スワイプ指示アイコンを非表示にする */
+    function hideSwipeIndicator() {
+      if (swipeIndicator && swipeIndicator.classList.contains('is-visible')) {
+        swipeIndicator.classList.remove('is-visible');
+        swipeIndicator.classList.add('is-hidden'); // Add is-hidden for clarity
+      }
     }
-  }
 
-  // タッチイベントをスライドコンテナに適用
-  slideContainer.addEventListener('touchstart', touchStart);
-  slideContainer.addEventListener('touchend', touchEnd);
+    /** スライド要素を生成してDOMに追加 */
+    function createSlides() {
+      const fragment = document.createDocumentFragment();
+      const slideGap = parseFloat(getComputedStyle(mainContainer).getPropertyValue(SLIDE_GAP_VAR)) || 0;
+      // Gap is handled by padding on .slide now for scroll-snap compatibility
+      // slidesContainer.style.gap = `${slideGap}px`; // Remove this
 
-    showSlide(0);
+      for (let i = 0; i < TOTAL_SLIDES; i++) {
+        const slide = document.createElement('div');
+        slide.className = 'slide';
+        // Add padding to simulate gap effect with scroll-snap
+        slide.style.padding = `0 ${slideGap / 2}px`;
 
-  setTimeout(() => {
-    document.getElementById('swipe-arrows').style.display = 'none';
-  }, 5000);
+        const img = document.createElement('img');
+        const pageIndex = i + 1;
+        const zeroFilled = String(pageIndex).padStart(3, '0');
+        const imageSrc = `${IMAGE_PATH_PREFIX}${zeroFilled}${IMAGE_EXTENSION}`;
 
+        img.alt = `レシピブック ページ ${pageIndex}`;
+        img.loading = (i < 3) ? 'eager' : 'lazy'; // Eager load first few, lazy load rest
+        img.src = imageSrc; // Start loading
+
+        img.onerror = () => {
+            console.error(`Failed to load image: ${imageSrc}`);
+            img.alt = `画像読み込みエラー: ${pageIndex}`;
+            slide.innerHTML = `<div style="color: red; font-size: 12px; text-align: center; padding: 10px;">画像 ${pageIndex}<br>読み込み失敗<br>${imageSrc.split('/').pop()}</div>`;
+            slide.style.cssText += 'border: 1px solid red; background-color: #fee; display: flex; justify-content: center; align-items: center;';
+            // Count error as loaded for initial loading logic
+            if (i < initialImagesToLoad) {
+                handleInitialImageLoad();
+            }
+        };
+
+        // Add load listener for initial images
+        if (i < initialImagesToLoad) {
+          if (img.complete) {
+              handleInitialImageLoad(); // Already loaded (cached)
+          } else {
+              img.addEventListener('load', handleInitialImageLoad, { once: true });
+          }
+        }
+
+        slide.appendChild(img);
+        fragment.appendChild(slide);
+        slides.push(slide);
+      }
+      slidesContainer.appendChild(fragment);
+    }
+
+    // --- ローディング制御 ---
+    let initialImagesLoaded = 0;
+    const initialImagesToLoad = 3; // Number of initial images to wait for
+    let loadingFallbackTimeout;
+
+    function handleInitialImageLoad() {
+        initialImagesLoaded++;
+        if (initialImagesLoaded >= initialImagesToLoad && !initialLoadComplete) {
+            hideLoadingOverlay();
+        }
+    }
+
+    function hideLoadingOverlay() {
+        if (loadingOverlay && !loadingOverlay.classList.contains('is-hidden')) {
+            clearTimeout(loadingFallbackTimeout); // フォールバックタイマーをクリア
+            const ball = document.querySelector('.loading-ball-container');
+            if (ball) {
+                // 現在のアニメーションをリセットして再スタートさせ、1回分のバウンスを再生
+                ball.style.animation = 'none';
+                void ball.offsetWidth; // 再描画を強制
+                ball.style.animation = `gravity-bounce var(--loading-animation-duration) ease-out 1`;
+                // アニメーション終了後にオーバーレイを非表示にする
+                ball.addEventListener('animationend', () => {
+                    loadingOverlay.classList.add('is-hidden');
+                }, { once: true });
+            } else {
+                // ballが取得できなかった場合はそのままオーバーレイを非表示に
+                loadingOverlay.classList.add('is-hidden');
+            }
+            initialLoadComplete = true; // 初期ロード完了をマーク
+            showSlide(currentSlideIndex, 'auto'); // 正しい初期位置を表示
+            setTimeout(showSwipeIndicator, 500);
+        }
+    }
+
+    // --- リサイズ時の処理 ---
+    let resizeTimeout;
+    function handleResize() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            windowWidth = window.innerWidth;
+            // スクロール位置を再計算して現在のスライドにスナップ (アニメーションなし)
+            showSlide(currentSlideIndex, 'auto');
+            // スライダーの見た目も更新 (showSlide内で呼ばれるupdateCurrentState->updatePageSliderで処理されるはず)
+            // Tickmarksも再描画
+            createSliderTickmarks();
+        }, 250); // Debounce resize events
+    }
+
+    /** スライダーのスナップ処理 */
+    function snapSliderValue(index) {
+        let snappedIndex = index;
+        let minDiff = SNAP_THRESHOLD + 1; // Initialize with value > threshold
+
+        for (const snapPointIndex of SNAP_POINTS_INDICES) {
+            const diff = Math.abs(index - snapPointIndex);
+            // Snap if exactly on the point or within the reduced threshold
+            if (diff <= SNAP_THRESHOLD && diff < minDiff) {
+                snappedIndex = snapPointIndex;
+                minDiff = diff; // Update minDiff to find the closest snap point
+            }
+        }
+        return snappedIndex;
+    }
+
+    /** スライダーの目盛り（Tickmarks）を生成 */
+    function createSliderTickmarks() {
+        if (!sliderTickmarksContainer || TOTAL_SLIDES <= 1) return;
+
+        sliderTickmarksContainer.innerHTML = ''; // Clear existing ticks
+        const fragment = document.createDocumentFragment();
+        // Use the slider's offsetWidth directly for calculation, as the ticks are positioned relative to the container
+        const sliderWidth = pageSlider.offsetWidth;
+        const thumbSize = parseFloat(getComputedStyle(pageSlider).getPropertyValue('--slider-thumb-size')) || 0;
+        // Effective track width where the center of the thumb travels
+        const effectiveTrackWidth = sliderWidth - thumbSize;
+
+        if (effectiveTrackWidth <= 0) return; // Avoid division by zero if slider not visible/rendered
+
+        SNAP_POINTS_INDICES.forEach(index => {
+            const tick = document.createElement('div');
+            tick.className = 'tickmark';
+            // Calculate position as a percentage of the effective track width
+            const percentage = (index / (TOTAL_SLIDES - 1)) * 100;
+            // Position the tick mark based on the percentage along the effective track width
+            tick.style.left = `${percentage}%`;
+            fragment.appendChild(tick);
+        });
+        sliderTickmarksContainer.appendChild(fragment);
+    }
+
+
+    // --- 初期化処理 ---
+    function init() {
+      pageNumberInput.max = TOTAL_SLIDES;
+      pageNumberInput.min = 1;
+      pageSlider.max = TOTAL_SLIDES - 1; // Slider index is 0-based
+
+      createSlides();
+      createSliderTickmarks(); // Create initial tickmarks
+
+      // --- Event listeners ---
+      tocButton.addEventListener('click', showTableOfContents);
+      prevButton.addEventListener('click', prevSlide);
+      nextButton.addEventListener('click', nextSlide);
+      jumpButton.addEventListener('click', jumpToSlide);
+      pageNumberInput.addEventListener('change', jumpToSlide);
+      pageNumberInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+              jumpToSlide();
+              e.preventDefault();
+          }
+      });
+
+      // スライドコンテナのスクロールイベント
+      slidesContainer.addEventListener('scroll', () => {
+          // プログラムによるスクロール中、またはスライダードラッグ中は無視
+          if (isScrollingProgrammatically || isDraggingSlider) return;
+
+          hideSwipeIndicator(); // Hide indicator on first manual scroll/swipe
+          clearTimeout(scrollEndTimer);
+          scrollEndTimer = setTimeout(() => {
+              const newIndex = getCurrentIndexFromScroll();
+              // console.log(`Manual scroll ended at index: ${newIndex}`);
+              updateCurrentState(newIndex); // スクロール完了後に状態を更新
+          }, 150); // スナップ完了を検出するための短い待機時間
+      }, { passive: true });
+
+      // ページスライダーのイベントリスナー
+      if (pageSlider) {
+          // ドラッグ中 (inputイベント)
+          pageSlider.addEventListener('input', () => {
+              isDraggingSlider = true; // Set drag flag
+              const index = parseInt(pageSlider.value);
+              // スライダーの見た目だけをリアルタイムに更新
+              updateSliderVisuals(index);
+              // ドラッグ中はページを動かさない
+          });
+
+          // ドラッグ終了後 (changeイベント) - スナップ処理を追加
+          pageSlider.addEventListener('change', () => {
+              let index = parseInt(pageSlider.value);
+              // スナップ処理
+              const snappedIndex = snapSliderValue(index);
+
+              if (snappedIndex !== index) {
+                  // console.log(`Snapping from ${index} to ${snappedIndex}`);
+                  index = snappedIndex;
+                  pageSlider.value = index; // Update slider value visually
+                  updateSliderVisuals(index); // Update ball rotation/number immediately
+              }
+
+              // ドラッグ終了時にページを移動（'auto'で即時反映）
+              showSlide(index, 'auto');
+              // ドラッグフラグをリセット
+              setTimeout(() => { isDraggingSlider = false; }, 50);
+          });
+
+          // スライダーコンテナ上でのクリックでも移動できるようにする (オプション) - スナップ処理を追加
+          pageSliderContainer.addEventListener('click', (e) => {
+              // スライダー自体(thumb含む)のクリックは input/change で処理されるので除外
+              if (e.target === pageSlider) return;
+
+              const rect = pageSlider.getBoundingClientRect();
+              const thumbSize = parseFloat(getComputedStyle(pageSlider).getPropertyValue('--slider-thumb-size')) || 0;
+              const trackWidth = pageSlider.offsetWidth;
+              const effectiveTrackWidth = trackWidth - thumbSize; // Width where thumb center travels
+              const clickX = e.clientX - rect.left;
+
+              // Calculate position relative to the effective track (center of thumb travel)
+              const effectiveClickX = Math.max(0, Math.min(effectiveTrackWidth, clickX - thumbSize / 2));
+
+              let progress = 0;
+              if (effectiveTrackWidth > 0) {
+                  progress = effectiveClickX / effectiveTrackWidth;
+              } else if (clickX >= trackWidth / 2) {
+                  // Handle edge case where effective width is 0 or less (e.g., very small slider)
+                  progress = 1;
+              }
+
+              let targetIndex = Math.round(progress * (TOTAL_SLIDES - 1));
+
+              // クリック時もスナップ処理を適用
+              const snappedIndex = snapSliderValue(targetIndex);
+              // console.log(`Clicked near ${targetIndex}, snapping to ${snappedIndex}`);
+              targetIndex = snappedIndex;
+
+              if (targetIndex !== currentSlideIndex) {
+                  showSlide(targetIndex, 'auto');
+              }
+          });
+      }
+
+      window.addEventListener('resize', handleResize);
+
+      // --- Initial setup ---
+      updateCurrentState(0); // Set initial state (calls updatePageSlider)
+      // showSlide(0, 'auto'); // Ensure initial scroll position - called by hideLoadingOverlay now
+
+      // Fallback to hide loading overlay if images take too long
+      loadingFallbackTimeout = setTimeout(hideLoadingOverlay, 7000); // 7 seconds timeout
+
+      // Check if initial images already loaded (e.g., from cache)
+      if (initialImagesLoaded >= initialImagesToLoad) {
+          hideLoadingOverlay();
+      }
+    }
+
+    // --- DOMContentLoaded Listener ---
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        // DOMContentLoaded has already fired
+        init();
+    }
+
+    // 追加: ページ番号表示用spanの内容と位置を更新
+    function updateSliderVisuals(index) {
+        if (!pageSlider || TOTAL_SLIDES <= 1) return;
+        const percentage = (TOTAL_SLIDES > 1) ? (index / (TOTAL_SLIDES - 1)) * 100 : 0;
+        const rotation = index * HANDLE_ROTATION_DEGREE;
+        const pageNum = index;
+        
+        // CSS変数の更新
+        pageSlider.style.setProperty('--slider-progress', `${percentage}%`);
+        pageSlider.style.setProperty('--slider-thumb-rotation', `${rotation}deg`);
+        pageSlider.style.setProperty('--slider-page-number', pageNum);
+        
+        // ページ番号表示用spanの更新
+        const display = document.getElementById('slider-page-number-display');
+        if (display) {
+            display.textContent = pageNum;
+            // 100以上の場合、フォントサイズを縮小する
+            if (pageNum >= 100) {
+                display.style.fontSize = "10px";
+            } else {
+                display.style.fontSize = "14px";
+            }
+            const sliderWidth = pageSlider.offsetWidth;
+            const thumbSize = parseFloat(getComputedStyle(pageSlider).getPropertyValue('--slider-thumb-size')) || 0;
+            const effectiveWidth = sliderWidth - thumbSize;
+            const leftPos = (effectiveWidth * (index / (TOTAL_SLIDES - 1))) + (thumbSize / 2);
+            display.style.left = `${leftPos}px`;
+        }
+    }
 
   </script>
-  <script src="script.js?v=20241106"></script>
+
 </body>
 </html>
