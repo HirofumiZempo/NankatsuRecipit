@@ -45,6 +45,7 @@
 
       /* レイアウト変数 */
       --slide-gap: 10px; /* スライド間の余白 (JSでスライド生成時に適用) */
+      --button-container-margin-bottom: 30px; /* JSで動的に変更するボタン下のマージン */
 
       /* その他 */
       --transition-duration: 0.3s; /* JSでのアニメーション用 */
@@ -165,6 +166,8 @@
       width: 100%;
       position: relative; /* スワイプインジケーターなどの基準点 */
       background-color: #fff; /* スライド間の背景色 */
+      /* max-height: 500px; */ /* 例: 高さを制限する場合。ただしflex-growとの兼ね合いに注意 */
+      min-height: 0; /* flexアイテムの縮小を許可 */
     }
 
     /* --- Individual Slide --- */
@@ -191,7 +194,8 @@
     /* --- Swipe Indicator --- */
     #swipe-indicator {
       position: absolute; /* Position relative to #main-container */
-      bottom: calc(env(safe-area-inset-bottom) + 60px); /* Adjust as needed above button bar */
+      /* ボタンバーの高さ(概算60px) + 動的マージン を考慮 */
+      bottom: calc(env(safe-area-inset-bottom) + 60px + var(--button-container-margin-bottom));
       right: 0.8rem;
       width: 45px;
       height: 45px;
@@ -243,6 +247,8 @@
       flex-shrink: 0; /* スライド領域が伸びてもボタン領域は縮まないように */
       /* スライダーの高さを考慮して最小高さを設定 */
       min-height: calc(max(var(--slider-track-height), var(--slider-thumb-size)) + 1.2rem); /* padding考慮 */
+      margin-bottom: var(--button-container-margin-bottom); /* JSで制御するマージン */
+      transition: margin-bottom 0.3s ease; /* マージン変更をアニメーション */
     }
 
     /* --- UI要素 (ボタン、入力欄) --- */
@@ -372,7 +378,7 @@
       position: relative; /* For pseudo-element positioning */
       z-index: 2; /* Ensure thumb is above track ticks */
     }
-    
+
     /* 追加: スライダーコンテナ内のページ番号表示用spanのスタイル */
     #page-slider-container {
         position: relative; /* spanを絶対配置するため */
@@ -393,7 +399,7 @@
         padding: 2px 2px;
         /*text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5); /* 文字に影をつける */
     }
-    
+
     #page-slider::-moz-range-thumb {
       border: none; /* Remove border */
       height: var(--slider-thumb-size);
@@ -462,6 +468,7 @@
         flex-wrap: wrap;
         justify-content: center; /* Center buttons when slider is hidden */
         min-height: auto; /* Reset min-height when slider is hidden */
+        /* margin-bottom is controlled by variable */
       }
       #button-container button,
       #button-container input[type="number"] {
@@ -471,7 +478,8 @@
       }
       #swipe-indicator {
           right: 0.5rem;
-          bottom: calc(env(safe-area-inset-bottom) + 55px); /* Adjust for smaller button bar */
+          /* ボタンバーの高さ(概算55px) + 動的マージン */
+          bottom: calc(env(safe-area-inset-bottom) + 55px + var(--button-container-margin-bottom));
           width: 40px;
           height: 40px;
           font-size: 1.2rem;
@@ -501,6 +509,7 @@
           justify-content: center; /* Center buttons */
           flex-wrap: wrap; /* Allow wrapping */
           min-height: auto;
+          /* margin-bottom is controlled by variable */
        }
        #button-container button,
        #button-container input[type="number"] {
@@ -510,7 +519,8 @@
        }
        #swipe-indicator {
            right: 1rem;
-           bottom: calc(env(safe-area-inset-bottom) + 50px);
+           /* ボタンバーの高さ(概算50px) + 動的マージン */
+           bottom: calc(env(safe-area-inset-bottom) + 50px + var(--button-container-margin-bottom));
            width: 40px;
            height: 40px;
        }
@@ -536,6 +546,7 @@
             padding-bottom: calc(0.8rem + env(safe-area-inset-bottom));
             flex-wrap: nowrap; /* Prevent wrapping when slider is shown */
              min-height: calc(max(var(--slider-track-height), var(--slider-thumb-size)) + 1.6rem); /* padding考慮 */
+             /* margin-bottom is controlled by variable */
         }
         #page-slider-container {
            display: flex !important; /* Show slider container */
@@ -557,7 +568,8 @@
         }
         #swipe-indicator {
             right: 1rem;
-            bottom: calc(env(safe-area-inset-bottom) + 65px); /* Adjust for potentially taller button bar */
+            /* ボタンバーの高さ(概算65px) + 動的マージン */
+            bottom: calc(env(safe-area-inset-bottom) + 65px + var(--button-container-margin-bottom));
         }
         /* Adjust thumb margin if variables changed in this media query */
         #page-slider::-webkit-slider-thumb {
@@ -590,7 +602,7 @@
     </div>
 
     <!-- Control Buttons and Slider -->
-    <div id="button-container" style="margin-bottom: 30px;"> <!-- iphoneだと20pxでも画面が動く -->
+    <div id="button-container"> <!-- Removed inline style -->
       <button id="tocButton">もくじ</button>
       <button id="prevButton">前へ</button>
 
@@ -621,6 +633,7 @@
     const WIDE_SCREEN_BREAKPOINT = 768; // px, should match CSS media query
     const HANDLE_ROTATION_DEGREE = 15; // スライダーボールの回転角度/ページ
     const SLIDE_GAP_VAR = '--slide-gap'; // CSS変数名
+    const BASE_BUTTON_MARGIN = 30; // ボタンコンテナの基本マージン(px)
     // スライダーのスナップ関連
     const SNAP_POINTS_PAGES = [7, 44, 51, 62, 75]; // スナップさせたいページ番号 (1始まり)
     const SNAP_POINTS_INDICES = SNAP_POINTS_PAGES.map(p => p - 1); // 0始まりのインデックスに変換
@@ -639,10 +652,12 @@
     const pageSliderContainer = document.getElementById('page-slider-container');
     const pageSlider = document.getElementById('page-slider');
     const sliderTickmarksContainer = document.getElementById('slider-tickmarks'); // Tickmarks container
+    const buttonContainer = document.getElementById('button-container'); // ボタンコンテナ取得
 
     // --- 状態変数 ---
     let currentSlideIndex = 0;
     let slides = []; // スライド要素(div)を格納する配列
+    let fixedMargin = null; // ボタンコンテナの固定マージンを保持する変数
     let windowWidth = window.innerWidth;
     let isScrollingProgrammatically = false; // Programmatic scroll flag
     let scrollEndTimer; // Timer for scroll end detection
@@ -650,6 +665,48 @@
     let initialLoadComplete = false; // Flag for initial load
 
     // --- 関数定義 ---
+    // 画像の高さに基づいてボタンコンテナ下のマージンを調整
+    function adjustLayoutBasedOnImageHeight(forceUpdate = false) {
+        if (!initialLoadComplete || !slides.length || !buttonContainer) return;
+        
+        // すでに固定マージンが計算済みなら、リサイズ時でない場合は再計算しない
+        if (!forceUpdate && fixedMargin !== null) return;
+        
+        const slidesHeight = slidesContainer.offsetHeight;
+        const currentImage = slides[currentSlideIndex]?.querySelector('img');
+        
+        if (!currentImage) return;
+        
+        const tryAdjust = (imgHeight) => {
+            if (imgHeight <= 0) return;
+            const thresholdHeight = imgHeight * 1.3;
+            let newMarginValue = BASE_BUTTON_MARGIN;
+            if (slidesHeight > thresholdHeight) {
+                const excessHeight = slidesHeight - thresholdHeight;
+                newMarginValue = BASE_BUTTON_MARGIN + excessHeight;
+            }
+            newMarginValue = Math.max(BASE_BUTTON_MARGIN, newMarginValue);
+            
+            // CSS変数を更新し、固定マージンとして保存
+            document.documentElement.style.setProperty('--button-container-margin-bottom', `${newMarginValue}px`);
+            fixedMargin = newMarginValue;
+        };
+        
+        let renderedImageHeight = currentImage.offsetHeight;
+        
+        if (renderedImageHeight > 0) {
+            tryAdjust(renderedImageHeight);
+        } else if (currentImage.complete && currentImage.naturalHeight > 0) {
+            const aspectRatio = currentImage.naturalWidth / currentImage.naturalHeight;
+            const slidePadding = (parseFloat(getComputedStyle(mainContainer).getPropertyValue(SLIDE_GAP_VAR)) || 0);
+            const containerWidth = slidesContainer.clientWidth - slidePadding;
+            const estimatedRenderedHeight = containerWidth / aspectRatio;
+            tryAdjust(estimatedRenderedHeight);
+        } else if (!currentImage.complete) {
+            const specificLoadHandler = () => tryAdjust(currentImage.offsetHeight);
+            currentImage.addEventListener('load', specificLoadHandler, { once: true });
+        }
+    }
 
     /**
      * スライドを指定したインデックスにスクロール表示
@@ -675,7 +732,7 @@
       const scrollLeftPosition = index * containerWidth;
 
       // 状態を先に更新 (これによりスライダー等が即座に反応)
-      updateCurrentState(index);
+      updateCurrentState(index); // This now calls adjustLayoutBasedOnImageHeight via rAF
 
       isScrollingProgrammatically = true; // Set flag before scrolling
       slidesContainer.scrollTo({
@@ -694,12 +751,16 @@
               const actualIndex = getCurrentIndexFromScroll();
               if (actualIndex !== currentSlideIndex) {
                   console.log("Correcting index after smooth scroll timeout");
-                  updateCurrentState(actualIndex);
+                  updateCurrentState(actualIndex); // Ensure state and layout are correct
               }
+              // Ensure layout is adjusted after smooth scroll finishes
+              requestAnimationFrame(adjustLayoutBasedOnImageHeight);
           }, 500); // Adjust time based on typical smooth scroll duration
       } else {
           // 'auto' scroll is synchronous (or very fast)
           isScrollingProgrammatically = false;
+          // Ensure layout is adjusted immediately after 'auto' scroll
+          requestAnimationFrame(adjustLayoutBasedOnImageHeight);
       }
 
       hideSwipeIndicator();
@@ -727,47 +788,82 @@
     function updateCurrentState(index) {
         if (index < 0 || index >= TOTAL_SLIDES) return; // Safety check
 
-        // Avoid redundant updates if index hasn't changed
-        if (index === currentSlideIndex && initialLoadComplete) {
-             // Also check if slider value needs update (e.g., after resize)
+        const indexChanged = index !== currentSlideIndex;
+
+        // Avoid redundant updates if index hasn't changed, unless slider needs sync
+        if (!indexChanged && initialLoadComplete) {
              if (pageSlider && parseInt(pageSlider.value) !== index) {
                  pageSlider.value = index;
                  updateSliderVisuals(index);
              }
+             // Even if index didn't change, layout might need adjustment (e.g., initial load)
+             requestAnimationFrame(adjustLayoutBasedOnImageHeight);
              return;
         }
 
         // console.log(`Updating state to index: ${index}`);
         currentSlideIndex = index;
-        pageNumberInput.value = currentSlideIndex; // ページ番号は0始まり
+        pageNumberInput.value = currentSlideIndex; // ページ番号は0始まりで表示
 
         updatePageSlider(); // スライダーの値と見た目を更新
         updateNavButtons(); // ナビゲーションボタンの状態を更新
+
+        // Adjust layout after state update, using rAF to wait for potential rendering changes
+        requestAnimationFrame(adjustLayoutBasedOnImageHeight);
     }
 
-    /** スライダーの見た目（CSS変数）を更新 */
+    /** スライダーの見た目（CSS変数とページ番号表示）を更新 */
     function updateSliderVisuals(index) {
         if (!pageSlider || TOTAL_SLIDES <= 1) return;
         const percentage = (TOTAL_SLIDES > 1) ? (index / (TOTAL_SLIDES - 1)) * 100 : 0;
         const rotation = index * HANDLE_ROTATION_DEGREE;
-        const pageNum = index;
+        const pageNum = index; // ページ番号は0始まり
 
         // CSS変数を更新 (要素に直接セット)
         pageSlider.style.setProperty('--slider-progress', `${percentage}%`);
         pageSlider.style.setProperty('--slider-thumb-rotation', `${rotation}deg`);
-        // CSS変数 '--slider-page-number' を更新 (contentプロパティ用)
-        // contentプロパティは文字列を期待するため、クォートで囲む
-        pageSlider.style.setProperty('--slider-page-number', pageNum);
+        // CSS変数 '--slider-page-number' は直接使わないように変更 (spanで表示するため)
+        // pageSlider.style.setProperty('--slider-page-number', `'${pageNum}'`); // 不要
+
+        // ページ番号表示用spanの更新
+        const display = document.getElementById('slider-page-number-display');
+        if (display) {
+            display.textContent = pageNum;
+            // 100以上の場合、フォントサイズを縮小する
+            if (pageNum >= 100) {
+                display.style.fontSize = "10px"; // 3桁用
+            } else if (pageNum >= 10) {
+                display.style.fontSize = "12px"; // 2桁用
+            } else {
+                display.style.fontSize = "14px"; // 1桁用
+            }
+
+            // サム（ボール）の中心にページ番号を配置するための計算
+            const sliderWidth = pageSlider.offsetWidth;
+            const thumbSize = parseFloat(getComputedStyle(pageSlider).getPropertyValue('--slider-thumb-size')) || 0;
+            // サムの中心が移動する有効なトラック幅
+            const effectiveTrackWidth = sliderWidth - thumbSize;
+            // 現在のインデックスに基づいてサムの中心の左端からの位置を計算
+            let thumbCenterPos = 0;
+            if (TOTAL_SLIDES > 1) {
+                thumbCenterPos = (effectiveTrackWidth * (index / (TOTAL_SLIDES - 1))) + (thumbSize / 2);
+            } else {
+                thumbCenterPos = thumbSize / 2; // スライドが1つの場合
+            }
+            // spanのleftスタイルを設定（transform: translate(-50%, -50%) で中央揃え）
+            display.style.left = `${thumbCenterPos}px`;
+        }
     }
+
 
     /** スライダーの value と見た目の両方を更新 */
     function updatePageSlider() {
         if (!pageSlider || TOTAL_SLIDES <= 1) return;
-        // スライダーの input value を更新
+        // スライダーの input value を更新 (0始まり)
         if (parseInt(pageSlider.value) !== currentSlideIndex) {
             pageSlider.value = currentSlideIndex;
         }
-        // スライダーの見た目（CSS変数）を更新
+        // スライダーの見た目（CSS変数とページ番号表示）を更新
         updateSliderVisuals(currentSlideIndex);
     }
 
@@ -794,28 +890,29 @@
 
     /** 指定ページへジャンプ */
     function jumpToSlide() {
-      const pageNumber = parseInt(pageNumberInput.value, 10);
-      if (!isNaN(pageNumber) && pageNumber >= 0 && pageNumber <= TOTAL_SLIDES) {
-        showSlide(pageNumber, 'auto'); // Use 'auto' for instant jump
+      const targetIndex = parseInt(pageNumberInput.value, 10);
+      // 入力は0始まり
+      if (!isNaN(targetIndex) && targetIndex >= 0 && targetIndex < TOTAL_SLIDES) {
+        showSlide(targetIndex, 'auto'); // Use 'auto' for instant jump
       } else {
-        pageNumberInput.value = currentSlideIndex + 1; // Reset to current page
-        alert(`1から${TOTAL_SLIDES}の間のページ番号を入力してください。`);
+        pageNumberInput.value = currentSlideIndex; // Reset to current page (0-based)
+        alert(`0から${TOTAL_SLIDES - 1}の間のページ番号を入力してください。`);
       }
     }
 
     /** 目次ページを表示 */
     function showTableOfContents() {
-      showSlide(TOC_PAGE_INDEX, 'auto'); // Jump to TOC
+      showSlide(TOC_PAGE_INDEX, 'auto'); // Jump to TOC (0-based index)
     }
 
     /** スワイプ指示アイコンを表示 */
     function showSwipeIndicator() {
         // Show only if not already hidden and on touch devices potentially
-        if (swipeIndicator && swipeIndicator.classList.contains('is-hidden')) {
+        if (swipeIndicator && !swipeIndicator.classList.contains('is-visible')) { // Check !is-visible instead of is-hidden
              // Simple check for touch device (not foolproof)
              const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
              if (isTouchDevice) {
-                 swipeIndicator.classList.remove('is-hidden');
+                 swipeIndicator.classList.remove('is-hidden'); // Ensure hidden is removed
                  swipeIndicator.classList.add('is-visible');
              }
         }
@@ -836,6 +933,27 @@
       // Gap is handled by padding on .slide now for scroll-snap compatibility
       // slidesContainer.style.gap = `${slideGap}px`; // Remove this
 
+      // 新規追加：最初の画像サイズを固定する関数
+      function setUniformImageSizes() {
+        const firstSlide = slides[0];
+        if (!firstSlide) return;
+        const firstImg = firstSlide.querySelector('img');
+        if (!firstImg) return;
+        // 現在のレンダリングサイズを取得
+        const imgWidth = firstImg.offsetWidth;
+        const imgHeight = firstImg.offsetHeight;
+        // 全てのスライドの画像に対して固定サイズを適用
+        slides.forEach(slide => {
+          const img = slide.querySelector('img');
+          if (img) {
+            img.style.width = imgWidth + 'px';
+            img.style.height = imgHeight + 'px';
+          }
+        });
+      // スライドコンテナの高さも固定する
+      slidesContainer.style.height = imgHeight + 'px';
+    }
+
       for (let i = 0; i < TOTAL_SLIDES; i++) {
         const slide = document.createElement('div');
         slide.className = 'slide';
@@ -843,7 +961,7 @@
         slide.style.padding = `0 ${slideGap / 2}px`;
 
         const img = document.createElement('img');
-        const pageIndex = i + 1;
+        const pageIndex = i + 1; // 1-based for filename
         const zeroFilled = String(pageIndex).padStart(3, '0');
         const imageSrc = `${IMAGE_PATH_PREFIX}${zeroFilled}${IMAGE_EXTENSION}`;
 
@@ -851,19 +969,19 @@
         img.loading = (i < 3) ? 'eager' : 'lazy'; // Eager load first few, lazy load rest
         img.src = imageSrc; // Start loading
 
-        img.onerror = () => {
-            console.error(`Failed to load image: ${imageSrc}`);
-            img.alt = `画像読み込みエラー: ${pageIndex}`;
-            slide.innerHTML = `<div style="color: red; font-size: 12px; text-align: center; padding: 10px;">画像 ${pageIndex}<br>読み込み失敗<br>${imageSrc.split('/').pop()}</div>`;
-            slide.style.cssText += 'border: 1px solid red; background-color: #fee; display: flex; justify-content: center; align-items: center;';
-            // Count error as loaded for initial loading logic
-            if (i < initialImagesToLoad) {
-                handleInitialImageLoad();
-            }
-        };
-
+        // 最初の画像の場合は固定サイズを設定する処理を追加
+        if (i === 0) {
+          if (img.complete) {
+              setUniformImageSizes();
+              handleInitialImageLoad(); // 既に読み込み済みの場合
+          } else {
+              img.addEventListener('load', () => {
+                  setUniformImageSizes();
+                  handleInitialImageLoad();
+              }, { once: true });
+          }
         // Add load listener for initial images
-        if (i < initialImagesToLoad) {
+        } else if (i < initialImagesToLoad) {
           if (img.complete) {
               handleInitialImageLoad(); // Already loaded (cached)
           } else {
@@ -908,7 +1026,12 @@
                 loadingOverlay.classList.add('is-hidden');
             }
             initialLoadComplete = true; // 初期ロード完了をマーク
-            showSlide(currentSlideIndex, 'auto'); // 正しい初期位置を表示
+            showSlide(currentSlideIndex, 'auto'); // 正しい初期位置を表示 (これが終わった後にレイアウト調整)
+            // Adjust layout once after initial load and slide display
+            // Use setTimeout to ensure image has a chance to render after showSlide('auto')
+            setTimeout(() => {
+                requestAnimationFrame(adjustLayoutBasedOnImageHeight);
+            }, 100); // Small delay
             setTimeout(showSwipeIndicator, 500);
         }
     }
@@ -918,13 +1041,12 @@
     function handleResize() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
+            fixedMargin = null; // リサイズ時は固定マージンをリセットして再計算させる
             windowWidth = window.innerWidth;
-            // スクロール位置を再計算して現在のスライドにスナップ (アニメーションなし)
             showSlide(currentSlideIndex, 'auto');
-            // スライダーの見た目も更新 (showSlide内で呼ばれるupdateCurrentState->updatePageSliderで処理されるはず)
-            // Tickmarksも再描画
             createSliderTickmarks();
-        }, 250); // Debounce resize events
+            setTimeout(() => requestAnimationFrame(() => adjustLayoutBasedOnImageHeight(true)), 50);
+        }, 250);
     }
 
     /** スライダーのスナップ処理 */
@@ -972,8 +1094,8 @@
 
     // --- 初期化処理 ---
     function init() {
-      pageNumberInput.max = TOTAL_SLIDES;
-      pageNumberInput.min = 1;
+      pageNumberInput.max = TOTAL_SLIDES; // Max page number (1-based)
+      pageNumberInput.min = 0; // Min page number (0-based)
       pageSlider.max = TOTAL_SLIDES - 1; // Slider index is 0-based
 
       createSlides();
@@ -1002,7 +1124,7 @@
           scrollEndTimer = setTimeout(() => {
               const newIndex = getCurrentIndexFromScroll();
               // console.log(`Manual scroll ended at index: ${newIndex}`);
-              updateCurrentState(newIndex); // スクロール完了後に状態を更新
+              updateCurrentState(newIndex); // スクロール完了後に状態を更新 (this calls adjustLayout)
           }, 150); // スナップ完了を検出するための短い待機時間
       }, { passive: true });
 
@@ -1031,7 +1153,7 @@
               }
 
               // ドラッグ終了時にページを移動（'auto'で即時反映）
-              showSlide(index, 'auto');
+              showSlide(index, 'auto'); // This calls adjustLayout via rAF
               // ドラッグフラグをリセット
               setTimeout(() => { isDraggingSlider = false; }, 50);
           });
@@ -1066,7 +1188,7 @@
               targetIndex = snappedIndex;
 
               if (targetIndex !== currentSlideIndex) {
-                  showSlide(targetIndex, 'auto');
+                  showSlide(targetIndex, 'auto'); // This calls adjustLayout via rAF
               }
           });
       }
@@ -1074,14 +1196,17 @@
       window.addEventListener('resize', handleResize);
 
       // --- Initial setup ---
-      updateCurrentState(0); // Set initial state (calls updatePageSlider)
+      updateCurrentState(0); // Set initial state (calls updatePageSlider and adjustLayout via rAF)
       // showSlide(0, 'auto'); // Ensure initial scroll position - called by hideLoadingOverlay now
 
       // Fallback to hide loading overlay if images take too long
       loadingFallbackTimeout = setTimeout(hideLoadingOverlay, 7000); // 7 seconds timeout
 
       // Check if initial images already loaded (e.g., from cache)
-      if (initialImagesLoaded >= initialImagesToLoad) {
+      // Need to ensure handleInitialImageLoad calls hideLoadingOverlay only once
+      let initialCheckDone = false;
+      if (initialImagesLoaded >= initialImagesToLoad && !initialCheckDone) {
+          initialCheckDone = true;
           hideLoadingOverlay();
       }
     }
@@ -1094,35 +1219,8 @@
         init();
     }
 
-    // 追加: ページ番号表示用spanの内容と位置を更新
-    function updateSliderVisuals(index) {
-        if (!pageSlider || TOTAL_SLIDES <= 1) return;
-        const percentage = (TOTAL_SLIDES > 1) ? (index / (TOTAL_SLIDES - 1)) * 100 : 0;
-        const rotation = index * HANDLE_ROTATION_DEGREE;
-        const pageNum = index;
-        
-        // CSS変数の更新
-        pageSlider.style.setProperty('--slider-progress', `${percentage}%`);
-        pageSlider.style.setProperty('--slider-thumb-rotation', `${rotation}deg`);
-        pageSlider.style.setProperty('--slider-page-number', pageNum);
-        
-        // ページ番号表示用spanの更新
-        const display = document.getElementById('slider-page-number-display');
-        if (display) {
-            display.textContent = pageNum;
-            // 100以上の場合、フォントサイズを縮小する
-            if (pageNum >= 100) {
-                display.style.fontSize = "10px";
-            } else {
-                display.style.fontSize = "14px";
-            }
-            const sliderWidth = pageSlider.offsetWidth;
-            const thumbSize = parseFloat(getComputedStyle(pageSlider).getPropertyValue('--slider-thumb-size')) || 0;
-            const effectiveWidth = sliderWidth - thumbSize;
-            const leftPos = (effectiveWidth * (index / (TOTAL_SLIDES - 1))) + (thumbSize / 2);
-            display.style.left = `${leftPos}px`;
-        }
-    }
+    // // 削除: updateSliderVisuals関数が重複していたため、最後の定義を削除
+    // function updateSliderVisuals(index) { ... }
 
   </script>
 
