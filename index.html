@@ -27,7 +27,7 @@
       --glass-bg-color: rgba(255, 255, 255, 0.7);
       --glass-blur: 8px;
       --glass-border-color: rgba(255, 255, 255, 0.9);
-      --swipe-icon-bg: rgba(0, 0, 0, 0.25); /* Keep background for the circle */
+      --swipe-icon-bg: rgba(0, 0, 0, 0.25); /* Keep background for the circle 不透過率25%*/
       /* --swipe-icon-color: white; /* Removed as image is used */
       --slider-thumb-color: var(--primary-color); /* Fallback or border if needed */
       --slider-track-color: #ddd;
@@ -215,21 +215,37 @@
       visibility: hidden;
       transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, bottom 0.3s ease;
       pointer-events: none; /* 操作の邪魔にならないように */
+      transform: translateX(0); /* Add initial transform state */
     }
     #swipe-indicator.is-visible {
-        opacity: 1;
+        opacity: 0.8; /* Adjust opacity if needed */
         visibility: visible;
-        animation: subtle-pulse-vertical 2s infinite ease-in-out;
+        /* Change animation to horizontal swipe */
+        animation: subtle-swipe-horizontal 2s infinite ease-in-out;
     }
     #swipe-indicator.is-hidden {
       opacity: 0;
       visibility: hidden;
       animation: none;
     }
-    @keyframes subtle-pulse-vertical {
+    /* Remove old vertical pulse animation */
+    /* @keyframes subtle-pulse-vertical {
       0%, 100% { transform: scale(1); opacity: 0.7; }
       50% { transform: scale(1.08); opacity: 1; }
+    } */
+
+    /* Add new horizontal swipe animation */
+    @keyframes subtle-swipe-horizontal {
+      0%, 100% {
+        transform: translateX(0);
+        opacity: 0.7;
+      }
+      50% {
+        transform: translateX(-8px); /* Adjust distance as needed */
+        opacity: 1;
+      }
     }
+
 
     /* --- Button Container (スライダーを含む) --- */
     #button-container {
