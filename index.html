@@ -189,6 +189,8 @@
       object-fit: contain;
       user-select: none;
       -webkit-user-drag: none;
+      box-shadow: 0 8px 12px rgba(30, 60, 90, 0.2);
+      filter: drop-shadow(0 4px 8px rgba(30, 60, 90, 0.2));
     }
 
     /* --- Swipe Indicator --- */
@@ -274,31 +276,45 @@
 
     /* --- UI要素 (ボタン、入力欄) --- */
     /* Base button style (Specificity: 0,1,1) */
-    #button-container button,
-    #button-container input[type="number"] {
-      padding: 0.5rem 0.9rem;
-      font-size: 0.85rem;
-      border: none;
-      border-radius: var(--button-border-radius);
-      cursor: pointer;
-      transition: background-color var(--transition-duration) ease,
-                  transform 0.1s ease;
-      background-color: var(--primary-color); /* Default: Blue */
-      color: var(--primary-text-color); /* Default: White */
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      font-weight: 500; /* 少し太字に */
-      flex-shrink: 0; /* Prevent buttons from shrinking too much */
+    /* ページ送り用のボタン（prevButton, nextButton）用スタイル */
+    #button-container #prevButton,
+    #button-container #nextButton {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(255, 255, 255, 0.7); /* 白の半透明 */
+        border: 3px solid var(--primary-color);   /* 太い青色の枠線 */
+        border-radius: 50%;                         /* 正円に */
+        color: var(--primary-color);                /* 初期は青文字 */
+        font-weight: bold;                          /* 太字 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: background-color 0.3s ease, color 0.3s ease;
     }
-    #button-container button:hover {
-      opacity: 0.9;
+    
+    /* ホバー時のスタイル */
+    #button-container #prevButton:hover,
+    #button-container #nextButton:hover {
+        background-color: var(--primary-color);     /* 青背景 */
+        color: var(--primary-text-color);           /* 白文字 */
     }
-    #button-container button:active {
-      transform: scale(0.96);
-      /* background-color: var(--primary-color); */ /* Keep original color on active */
-      opacity: 0.8;
+    
+    /* もくじボタン（tocButton）も若干変更（枠線とホバー効果追加） */
+    #button-container #tocButton {
+        background-color: var(--toc-button-bg-color);
+        color: var(--toc-button-text-color);
+        border: 1px solid var(--toc-button-text-color);
+        border-radius: 5px;  /* 丸みを帯びた角 */
+        padding: 0.5rem 1rem;
+        transition: background-color 0.3s ease, color 0.3s ease;
     }
+    
+    #button-container #tocButton:hover {
+        background-color: var(--primary-color);
+        color: var(--primary-text-color);
+    }
+    
     /* Specific style for TOC button (Specificity: 0,2,0 - Increased) */
     #button-container #tocButton {
         background-color: var(--toc-button-bg-color); /* Orange */
@@ -643,7 +659,7 @@
     <!-- Control Buttons and Slider -->
     <div id="button-container"> <!-- Removed inline style -->
       <button id="tocButton">もくじ</button>
-      <button id="prevButton">前へ</button>
+      <button id="prevButton">＜</button>
 
       <!-- スライダーコンテナ (幅広画面で表示) -->
       <div id="page-slider-container">
@@ -653,7 +669,7 @@
         <div id="slider-tickmarks"></div>
       </div>
 
-      <button id="nextButton">次へ</button>
+      <button id="nextButton">＞</button>
 
       <!-- ページ番号入力 (スマホ画面で表示) -->
       <label for="pageNumber" class="visually-hidden">ページ番号:</label>
@@ -1261,9 +1277,6 @@
         // DOMContentLoaded has already fired
         init();
     }
-
-    // // 削除: updateSliderVisuals関数が重複していたため、最後の定義を削除
-    // function updateSliderVisuals(index) { ... }
 
   </script>
 
