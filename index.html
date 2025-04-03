@@ -75,7 +75,7 @@
       color: var(--text-color);
       line-height: 1.6;
       overflow: hidden; /* body自体のスクロールを禁止 */
-      height: 100vh;
+      height: calc(var(--vh, 1vh) * 100);
       width: 100vw;
       display: flex;
       justify-content: center;
@@ -723,8 +723,12 @@
     let lastSliderIndexDuringDrag = -1; // スライダードラッグ中の最後のインデックス（ハプティック用）
 
     // --- 関数定義 ---
-    // 画像の高さに基づいてボタンコンテナ下のマージンを調整 -> 削除
-    // function adjustLayoutBasedOnImageHeight(forceUpdate = false) { ... }
+    function setVhUnit() {
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    setVhUnit();
+    window.addEventListener('resize', setVhUnit);
 
     /**
      * スライドを指定したインデックスにスクロール表示
