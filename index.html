@@ -4,13 +4,53 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>NankatsuSC_Recipit</title>
+</head>
 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3K7NEDPTYG"></script>
+<body>
+  <!-- Cookie同意バナー -->
+  <div id="cookie-banner" style="position: fixed; bottom: 10%; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; background: rgba(255,255,255,0.93); padding: 20px; box-shadow: 0 -1px 5px rgba(0,0,0,0.2); z-index: 10000; box-sizing: border-box; text-align: center; font-size: 14px;">
+    本サイトでは、アクセス状況の把握や利便性向上のためにGoogle Analyticsを利用し、Cookieを使用しています。。<br><br>
+    Cookieは、コンピュータ等の接続デバイスを識別するために利用され、個人を特定する目的での利用はされません。<br>
+    <div style="margin-top: 20px">
+      <button id="accept-cookies" style="margin: 5px;">同意する</button>
+      <button id="reject-cookies" style="margin: 5px;">拒否する</button>
+    </div>
+  </div>
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-3K7NEDPTYG');
+    const banner = document.getElementById('cookie-banner');
+  
+    function loadAnalytics() {
+      const gaScript = document.createElement('script');
+      gaScript.src = "https://www.googletagmanager.com/gtag/js?id=G-3K7NEDPTYG";
+      gaScript.async = true;
+      document.head.appendChild(gaScript);
+  
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      window.gtag = gtag;
+      gtag('js', new Date());
+      gtag('config', 'G-3K7NEDPTYG');
+    }
+  
+    document.getElementById('accept-cookies').addEventListener('click', () => {
+      localStorage.setItem('cookiesAccepted', 'yes');
+      loadAnalytics();
+      banner.style.display = 'none';
+    });
+  
+    document.getElementById('reject-cookies').addEventListener('click', () => {
+      localStorage.setItem('cookiesAccepted', 'no');
+      banner.style.display = 'none';
+    });
+  
+    // ページ読み込み時の判定
+    const consent = localStorage.getItem('cookiesAccepted');
+    if (consent === 'yes') {
+      loadAnalytics(); // 同意時のみAnalysicsが起動
+      banner.style.display = 'none';
+    } else if (consent === 'no') {
+      banner.style.display = 'none'; // 拒否済みでもバナーを再表示しない
+    }
   </script>
 
   <!-- <link rel="stylesheet" href="style.css?v=20250401"> -->
